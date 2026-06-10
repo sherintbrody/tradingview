@@ -6,15 +6,16 @@ from classifier import process_candles
 app = Flask(__name__)
 
 # Default instruments - user can modify this list
+# REPLACE WITH (new):
 DEFAULT_INSTRUMENTS = [
+    "XAU_USD",
+    "US30_USD",
+    "NAS100_USD",
     "EUR_USD",
     "GBP_USD",
+    "GBP_JPY",
     "USD_JPY",
-    "AUD_USD",
-    "XAU_USD",
-    "USD_CAD",
-    "NZD_USD",
-    "GBP_JPY"
+    "AUD_USD"
 ]
 
 TIMEFRAMES = ["Daily", "Weekly", "Monthly"]
