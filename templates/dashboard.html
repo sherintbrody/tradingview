@@ -1,0 +1,719 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candle Classification Dashboard</title>
+    <!-- Lightweight Charting Library -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --erc-bull: #00c853;
+            --erc-bear: #ff1744;
+            --base-color: #ffa726;
+            --indecisive-color: #42a5f5;
+            --bg-dark: #0a0e17;
+            --bg-card: #131722;
+            --bg-card-alt: #1c2030;
+            --text-primary: #d1d4dc;
+            --text-secondary: #787b86;
+            --border-color: #2a2e39;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #131722 0%, #1c2030 100%);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(90deg, #42a5f5, #00c853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .controls {
+            background: var(--bg-card);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .controls label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .controls textarea {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 400px;
+            height: 40px;
+            resize: vertical;
+        }
+
+        .controls select, .controls input {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            color: white;
+        }
+
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(66,165,245,0.3); }
+
+        .btn-summary {
+            background: linear-gradient(135deg, #00c853, #00a844);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10,14,23,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .loading-overlay.active { display: flex; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid #42a5f5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---- SUMMARY TABLE ---- */
+        .summary-section {
+            padding: 20px 30px;
+        }
+
+        .summary-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .summary-table th {
+            background: var(--bg-card-alt);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .summary-table tr:hover { background: var(--bg-card-alt); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-erc-bull { background: rgba(0,200,83,0.15); color: var(--erc-bull); border: 1px solid rgba(0,200,83,0.3); }
+        .badge-erc-bear { background: rgba(255,23,68,0.15); color: var(--erc-bear); border: 1px solid rgba(255,23,68,0.3); }
+        .badge-base { background: rgba(255,167,38,0.15); color: var(--base-color); border: 1px solid rgba(255,167,38,0.3); }
+        .badge-indecisive { background: rgba(66,165,245,0.15); color: var(--indecisive-color); border: 1px solid rgba(66,165,245,0.3); }
+
+        .direction-bull { color: var(--erc-bull); }
+        .direction-bear { color: var(--erc-bear); }
+        .direction-neutral { color: var(--text-secondary); }
+
+        /* ---- DETAIL SECTION ---- */
+        .detail-section {
+            padding: 20px 30px;
+        }
+
+        .instrument-block {
+            margin-bottom: 30px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .instrument-header {
+            background: var(--bg-card-alt);
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeframe-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tf-tab {
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tf-tab:hover { color: var(--text-primary); }
+        .tf-tab.active {
+            color: #42a5f5;
+            border-bottom-color: #42a5f5;
+        }
+
+        .tf-content { display: none; padding: 15px 20px; }
+        .tf-content.active { display: block; }
+
+        .chart-container {
+            width: 100%;
+            height: 350px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .detail-table th {
+            background: var(--bg-card-alt);
+            padding: 8px 12px;
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+        }
+
+        .detail-table td {
+            padding: 6px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-scroll {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .table-scroll::-webkit-scrollbar { width: 6px; }
+        .table-scroll::-webkit-scrollbar-track { background: var(--bg-card); }
+        .table-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+            background: var(--bg-card-alt);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .pct-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-dark);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .pct-bar-segment {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .controls { flex-direction: column; }
+            .controls textarea { width: 100%; }
+            .header { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>📊 Candle Classification Dashboard</h1>
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot" style="background: var(--erc-bull)"></div>
+            <span>ERC Bullish (Body &gt; 50%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: var(--erc-bear)"></div>
+            <span>ERC Bearish (Body &gt; 50%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: var(--base-color)"></div>
+            <span>Base (Body &lt; 50%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot" style="background: var(--indecisive-color)"></div>
+            <span>Indecisive (Body ≈ 50%)</span>
+        </div>
+    </div>
+</div>
+
+<div class="controls">
+    <div>
+        <label>Instruments (comma-separated):</label><br>
+        <textarea id="instrumentsInput">{{ default_instruments | join(', ') }}</textarea>
+    </div>
+    <div>
+        <label>Candle Count:</label><br>
+        <input type="number" id="candleCount" value="30" min="5" max="200">
+    </div>
+    <button class="btn btn-summary" onclick="loadSummary()">📋 Summary</button>
+    <button class="btn btn-primary" onclick="loadFullAnalysis()">🔍 Full Analysis</button>
+</div>
+
+<div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <div>Fetching &amp; Classifying Candles...</div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="summary-section" id="summarySection" style="display:none;">
+    <h2>📋 Latest Candle Classification Summary</h2>
+    <table class="summary-table" id="summaryTable">
+        <thead>
+            <tr>
+                <th>Instrument</th>
+                <th>Daily Class</th>
+                <th>Daily Body%</th>
+                <th>Daily Dir</th>
+                <th>Weekly Class</th>
+                <th>Weekly Body%</th>
+                <th>Weekly Dir</th>
+                <th>Monthly Class</th>
+                <th>Monthly Body%</th>
+                <th>Monthly Dir</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- DETAIL CHARTS + TABLES -->
+<div class="detail-section" id="detailSection"></div>
+
+<script>
+    const TIMEFRAMES = ['Daily', 'Weekly', 'Monthly'];
+
+    function getInstruments() {
+        return document.getElementById('instrumentsInput').value
+            .split(',')
+            .map(s => s.trim().toUpperCase().replace('/', '_'))
+            .filter(s => s.length > 0);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loading').classList.toggle('active', show);
+    }
+
+    function getBadgeClass(classification, direction) {
+        if (classification === 'ERC' && direction === 'Bullish') return 'badge-erc-bull';
+        if (classification === 'ERC' && direction === 'Bearish') return 'badge-erc-bear';
+        if (classification === 'Base') return 'badge-base';
+        if (classification === 'Indecisive') return 'badge-indecisive';
+        return 'badge-base';
+    }
+
+    function getDirClass(dir) {
+        if (dir === 'Bullish') return 'direction-bull';
+        if (dir === 'Bearish') return 'direction-bear';
+        return 'direction-neutral';
+    }
+
+    function getCandleColor(classification, direction) {
+        if (classification === 'ERC' && direction === 'Bullish') return { up: '#00c853', down: '#00c853', border: '#00c853' };
+        if (classification === 'ERC' && direction === 'Bearish') return { up: '#ff1744', down: '#ff1744', border: '#ff1744' };
+        if (classification === 'Indecisive') return { up: '#42a5f5', down: '#42a5f5', border: '#42a5f5' };
+        return { up: '#ffa726', down: '#ffa726', border: '#ffa726' };
+    }
+
+    // ─── SUMMARY ───────────────────────────────────────────
+    async function loadSummary() {
+        const instruments = getInstruments();
+        showLoading(true);
+
+        try {
+            const resp = await fetch('/api/summary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instruments })
+            });
+            const data = await resp.json();
+            renderSummary(data);
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+        showLoading(false);
+    }
+
+    function renderSummary(data) {
+        const section = document.getElementById('summarySection');
+        const tbody = document.querySelector('#summaryTable tbody');
+        tbody.innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${row.instrument.replace('_', '/')}</strong></td>
+                ${TIMEFRAMES.map(tf => {
+                    const d = row[tf];
+                    const badgeCls = getBadgeClass(d.classification, d.direction);
+                    const dirCls = getDirClass(d.direction);
+                    return `
+                        <td><span class="badge ${badgeCls}">${d.classification}</span></td>
+                        <td>${d.body_pct}%</td>
+                        <td class="${dirCls}">${d.direction}</td>
+                    `;
+                }).join('')}
+            `;
+            tbody.appendChild(tr);
+        });
+        section.style.display = 'block';
+    }
+
+    // ─── FULL ANALYSIS ─────────────────────────────────────
+    async function loadFullAnalysis() {
+        const instruments = getInstruments();
+        const count = parseInt(document.getElementById('candleCount').value) || 30;
+        showLoading(true);
+
+        try {
+            const resp = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instruments, candle_count: count })
+            });
+            const data = await resp.json();
+            renderDetail(data);
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+        showLoading(false);
+    }
+
+    function renderDetail(data) {
+        const container = document.getElementById('detailSection');
+        container.innerHTML = '';
+
+        Object.keys(data).forEach((instrument, idx) => {
+            const block = document.createElement('div');
+            block.className = 'instrument-block';
+
+            const tfContents = TIMEFRAMES.map((tf, ti) => {
+                const candles = data[instrument][tf] || [];
+                const chartId = `chart_${idx}_${ti}`;
+
+                // Count classifications
+                const counts = { ERC: 0, Base: 0, Indecisive: 0 };
+                candles.forEach(c => counts[c.classification]++);
+                const total = candles.length || 1;
+
+                const ercPct = ((counts.ERC / total) * 100).toFixed(1);
+                const basePct = ((counts.Base / total) * 100).toFixed(1);
+                const indPct = ((counts.Indecisive / total) * 100).toFixed(1);
+
+                const tableRows = candles.slice().reverse().map(c => {
+                    const badgeCls = getBadgeClass(c.classification, c.direction);
+                    const dirCls = getDirClass(c.direction);
+                    return `<tr>
+                        <td>${c.time}</td>
+                        <td>${c.open}</td>
+                        <td>${c.high}</td>
+                        <td>${c.low}</td>
+                        <td>${c.close}</td>
+                        <td>${c.body_pct}%</td>
+                        <td><span class="badge ${badgeCls}">${c.classification}</span></td>
+                        <td class="${dirCls}">${c.direction}</td>
+                    </tr>`;
+                }).join('');
+
+                return `
+                    <div class="tf-content ${ti === 0 ? 'active' : ''}" data-tf="${tf}">
+                        <div class="stats-bar">
+                            <div class="stat-card">
+                                <div class="stat-label">ERC</div>
+                                <div class="stat-value" style="color:var(--erc-bull)">${counts.ERC} <small style="font-size:12px">(${ercPct}%)</small></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Base</div>
+                                <div class="stat-value" style="color:var(--base-color)">${counts.Base} <small style="font-size:12px">(${basePct}%)</small></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Indecisive</div>
+                                <div class="stat-value" style="color:var(--indecisive-color)">${counts.Indecisive} <small style="font-size:12px">(${indPct}%)</small></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Total Candles</div>
+                                <div class="stat-value">${candles.length}</div>
+                            </div>
+                        </div>
+                        <div class="pct-bar">
+                            <div class="pct-bar-segment" style="width:${ercPct}%;background:var(--erc-bull)"></div>
+                            <div class="pct-bar-segment" style="width:${basePct}%;background:var(--base-color)"></div>
+                            <div class="pct-bar-segment" style="width:${indPct}%;background:var(--indecisive-color)"></div>
+                        </div>
+                        <br>
+                        <div class="chart-container" id="${chartId}"></div>
+                        <div class="table-scroll">
+                            <table class="detail-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th>
+                                        <th>Body %</th><th>Class</th><th>Direction</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${tableRows}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            block.innerHTML = `
+                <div class="instrument-header">
+                    <span>📈</span> ${instrument.replace('_', '/')}
+                </div>
+                <div class="timeframe-tabs">
+                    ${TIMEFRAMES.map((tf, ti) =>
+                        `<div class="tf-tab ${ti === 0 ? 'active' : ''}" data-tf="${tf}" onclick="switchTab(this)">${tf}</div>`
+                    ).join('')}
+                </div>
+                ${tfContents}
+            `;
+
+            container.appendChild(block);
+
+            // Render charts after DOM is ready
+            setTimeout(() => {
+                TIMEFRAMES.forEach((tf, ti) => {
+                    const candles = data[instrument][tf] || [];
+                    const chartId = `chart_${idx}_${ti}`;
+                    renderChart(chartId, candles, instrument, tf);
+                });
+            }, 100);
+        });
+    }
+
+    function switchTab(el) {
+        const block = el.closest('.instrument-block');
+        const tf = el.dataset.tf;
+
+        block.querySelectorAll('.tf-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+
+        block.querySelectorAll('.tf-content').forEach(c => {
+            c.classList.toggle('active', c.dataset.tf === tf);
+        });
+
+        // Resize chart
+        const activeContent = block.querySelector(`.tf-content[data-tf="${tf}"]`);
+        const chartContainer = activeContent?.querySelector('.chart-container');
+        if (chartContainer && chartContainer._chart) {
+            chartContainer._chart.applyOptions({ width: chartContainer.clientWidth });
+        }
+    }
+
+    function renderChart(containerId, candles, instrument, tf) {
+        const container = document.getElementById(containerId);
+        if (!container || candles.length === 0) return;
+
+        container.innerHTML = '';
+
+        const chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: 350,
+            layout: {
+                background: { color: '#0a0e17' },
+                textColor: '#787b86',
+            },
+            grid: {
+                vertLines: { color: '#1c2030' },
+                horzLines: { color: '#1c2030' },
+            },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            rightPriceScale: { borderColor: '#2a2e39' },
+            timeScale: { borderColor: '#2a2e39' },
+        });
+
+        container._chart = chart;
+
+        const candleSeries = chart.addCandlestickSeries({
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            borderUpColor: '#26a69a',
+            borderDownColor: '#ef5350',
+            wickUpColor: '#26a69a',
+            wickDownColor: '#ef5350',
+        });
+
+        const chartData = candles.map(c => ({
+            time: c.time,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close
+        }));
+
+        candleSeries.setData(chartData);
+
+        // Add markers for classification
+        const markers = candles.map(c => {
+            let color, shape, text;
+            if (c.classification === 'ERC') {
+                color = c.direction === 'Bullish' ? '#00c853' : '#ff1744';
+                shape = c.direction === 'Bullish' ? 'arrowUp' : 'arrowDown';
+                text = 'ERC';
+            } else if (c.classification === 'Base') {
+                color = '#ffa726';
+                shape = 'circle';
+                text = 'B';
+            } else {
+                color = '#42a5f5';
+                shape = 'square';
+                text = '?';
+            }
+
+            return {
+                time: c.time,
+                position: c.direction === 'Bullish' ? 'belowBar' : 'aboveBar',
+                color: color,
+                shape: shape,
+                text: text,
+                size: 0.5
+            };
+        });
+
+        candleSeries.setMarkers(markers);
+        chart.timeScale().fitContent();
+
+        // Handle resize
+        new ResizeObserver(() => {
+            chart.applyOptions({ width: container.clientWidth });
+        }).observe(container);
+    }
+</script>
+
+</body>
+</html>
