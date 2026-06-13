@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from oanda_client import fetch_candles
 from classifier import process_candles
 import os
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder='static',
+            static_url_path='/static')
 
 DEFAULT_INSTRUMENTS = [
     "XAU_USD",
@@ -31,6 +33,35 @@ def health():
     return {"status": "ok"}, 200
 
 
+# ── Favicon routes ─────────────────────────────────────────
+@app.route('/favicon.ico')
+def favicon_ico():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
+
+
+@app.route('/favicon.svg')
+def favicon_svg():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.svg',
+        mimetype='image/svg+xml'
+    )
+
+
+@app.route('/apple-touch-icon.png')
+def apple_touch_icon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'apple-touch-icon.png',
+        mimetype='image/png'
+    )
+# ───────────────────────────────────────────────────────────
+
+
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     data = request.get_json()
@@ -41,11 +72,13 @@ def analyze():
     for instrument in instruments[:10]:
         results[instrument] = {}
         for tf in TIMEFRAMES:
-            # Fetch extra candles so rolling avg is accurate
             raw = fetch_candles(instrument, tf, count=candle_count + 15)
             classified = process_candles(raw)
-            # Return only requested count (skip warmup candles)
-            results[instrument][tf] = classified[-candle_count:] if len(classified) > candle_count else classified
+            results[instrument][tf] = (
+                classified[-candle_count:]
+                if len(classified) > candle_count
+                else classified
+            )
 
     return results
 
@@ -59,33 +92,27 @@ def summary():
     for instrument in instruments[:10]:
         row = {"instrument": instrument}
         for tf in TIMEFRAMES:
-            # Fetch more for avg range accuracy
             raw = fetch_candles(instrument, tf, count=20)
             classified = process_candles(raw)
             if classified:
                 latest = classified[-1]
                 row[tf] = {
-                    "classification": latest["classification"],
-                    "structural_role": latest["structural_role"],
-                    "body_pct": latest["body_pct"],
-                    "close_position_pct": latest["close_position_pct"],
-                    "range_vs_avg": latest["range_vs_avg"],
-                    "direction": latest["direction"],
-                    "close": latest["close"],
-                    "is_marubozu": latest["is_marubozu"],
-                    "is_explosive": latest["is_explosive"]
+                    "classification":    latest["classification"],
+                    "structural_role":   latest["structural_role"],
+                    "body_pct":          latest["body_pct"],
+                    "close_position_pct":latest["close_position_pct"],
+                    "range_vs_avg":      latest["range_vs_avg"],
+                    "direction":         latest["direction"],
+                    "close":             latest["close"],
+                    "is_marubozu":       latest["is_marubozu"],
+                    "is_explosive":      latest["is_explosive"]
                 }
             else:
                 row[tf] = {
-                    "classification": "N/A",
-                    "structural_role": "N/A",
-                    "body_pct": 0,
-                    "close_position_pct": 0,
-                    "range_vs_avg": 0,
-                    "direction": "N/A",
-                    "close": 0,
-                    "is_marubozu": False,
-                    "is_explosive": False
+                    "classification": "N/A", "structural_role": "N/A",
+                    "body_pct": 0, "close_position_pct": 0,
+                    "range_vs_avg": 0, "direction": "N/A",
+                    "close": 0, "is_marubozu": False, "is_explosive": False
                 }
         summary_data.append(row)
 
