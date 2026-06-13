@@ -28,24 +28,26 @@ def dashboard():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok"}), 200
+    return {"status": "ok"}, 200
 
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     data = request.get_json()
     instruments = data.get("instruments", DEFAULT_INSTRUMENTS)
-    candle_count = min(data.get("candle_count", 30), 100)
+    candle_count = min(data.get("candle_count", 50), 200)
 
     results = {}
     for instrument in instruments[:10]:
         results[instrument] = {}
         for tf in TIMEFRAMES:
-            raw = fetch_candles(instrument, tf, count=candle_count)
+            # Fetch extra candles so rolling avg is accurate
+            raw = fetch_candles(instrument, tf, count=candle_count + 15)
             classified = process_candles(raw)
-            results[instrument][tf] = classified
+            # Return only requested count (skip warmup candles)
+            results[instrument][tf] = classified[-candle_count:] if len(classified) > candle_count else classified
 
-    return jsonify(results)
+    return results
 
 
 @app.route("/api/summary", methods=["POST"])
@@ -57,30 +59,37 @@ def summary():
     for instrument in instruments[:10]:
         row = {"instrument": instrument}
         for tf in TIMEFRAMES:
-            raw = fetch_candles(instrument, tf, count=5)
+            # Fetch more for avg range accuracy
+            raw = fetch_candles(instrument, tf, count=20)
             classified = process_candles(raw)
             if classified:
                 latest = classified[-1]
                 row[tf] = {
                     "classification": latest["classification"],
+                    "structural_role": latest["structural_role"],
                     "body_pct": latest["body_pct"],
                     "close_position_pct": latest["close_position_pct"],
+                    "range_vs_avg": latest["range_vs_avg"],
                     "direction": latest["direction"],
                     "close": latest["close"],
-                    "is_marubozu": latest["is_marubozu"]
+                    "is_marubozu": latest["is_marubozu"],
+                    "is_explosive": latest["is_explosive"]
                 }
             else:
                 row[tf] = {
                     "classification": "N/A",
+                    "structural_role": "N/A",
                     "body_pct": 0,
                     "close_position_pct": 0,
+                    "range_vs_avg": 0,
                     "direction": "N/A",
                     "close": 0,
-                    "is_marubozu": False
+                    "is_marubozu": False,
+                    "is_explosive": False
                 }
         summary_data.append(row)
 
-    return jsonify(summary_data)
+    return summary_data
 
 
 if __name__ == "__main__":
