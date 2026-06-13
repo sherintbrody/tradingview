@@ -7,14 +7,15 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --erc-bull:    #2196F3;
-            --erc-bear:    #f44336;
-            --failed-erc:  #ff9800;
-            --base-color:  #4caf50;
-            --marubozu:    #e91e63;
-            --bg-dark:     #0a0e17;
-            --bg-card:     #131722;
-            --bg-card-alt: #1c2030;
+            --erc-bull:       #2196F3;
+            --erc-bear:       #f44336;
+            --ferc-bull:      #FFC107;
+            --ferc-bear:      #E65100;
+            --base-color:     #4caf50;
+            --marubozu:       #e91e63;
+            --bg-dark:        #0a0e17;
+            --bg-card:        #131722;
+            --bg-card-alt:    #1c2030;
             --text-primary:   #d1d4dc;
             --text-secondary: #787b86;
             --border-color:   #2a2e39;
@@ -52,7 +53,7 @@
 
         .legend {
             display: flex;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -60,21 +61,54 @@
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 5px;
+            font-size: 11px;
+            white-space: nowrap;
         }
 
         .leg-box {
-            width:14px; height:14px;
+            width:13px; height:13px;
             border-radius:3px;
+            flex-shrink: 0;
         }
 
         .leg-circle {
-            width:14px; height:14px;
+            width:13px; height:13px;
             border-radius:50%;
             border:2.5px solid currentColor;
-            background: transparent;
+            background:transparent;
+            flex-shrink:0;
         }
+
+        /* FERC split swatch */
+        .leg-split {
+            width:24px; height:13px;
+            border-radius:3px;
+            background: linear-gradient(90deg, #FFC107 50%, #E65100 50%);
+            flex-shrink:0;
+        }
+
+        /* ── METHODOLOGY BAR ── */
+        .meth-bar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meth-card {
+            flex:1; min-width:155px;
+            padding:10px 13px;
+            border-radius:8px;
+            border:1px solid var(--border-color);
+            font-size:12px;
+        }
+
+        .meth-title { font-weight:700; font-size:13px; margin-bottom:4px; }
+        .meth-rule  { color:var(--text-secondary); font-size:11px; line-height:1.5; }
+        .meth-role  { margin-top:5px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
 
         /* ── CONTROLS ── */
         .controls {
@@ -108,39 +142,34 @@
             user-select: none;
         }
 
-        .dd-trigger:hover, .dd-trigger.open { border-color:#2196F3; }
+        .dd-trigger:hover,.dd-trigger.open { border-color:#2196F3; }
         .dd-trigger.open { border-radius:6px 6px 0 0; }
 
         .dd-arrow { font-size:10px; color:var(--text-secondary); transition:transform .2s; }
         .dd-trigger.open .dd-arrow { transform:rotate(180deg); }
 
         .dd-menu {
-            display: none;
-            position: absolute;
-            top: 100%; left:0; right:0;
-            background: var(--bg-card-alt);
-            border: 1px solid #2196F3;
-            border-top: none;
-            border-radius: 0 0 6px 6px;
-            z-index: 200;
-            max-height: 280px;
-            overflow-y: auto;
+            display:none;
+            position:absolute;
+            top:100%; left:0; right:0;
+            background:var(--bg-card-alt);
+            border:1px solid #2196F3;
+            border-top:none;
+            border-radius:0 0 6px 6px;
+            z-index:200;
+            max-height:280px;
+            overflow-y:auto;
         }
 
         .dd-menu.open { display:block; }
 
-        .dd-actions {
-            display:flex;
-            border-bottom:1px solid var(--border-color);
-        }
+        .dd-actions { display:flex; border-bottom:1px solid var(--border-color); }
 
         .dd-action {
             flex:1; padding:7px;
             text-align:center;
-            font-size:11px;
-            color:#2196F3;
-            cursor:pointer;
-            font-weight:600;
+            font-size:11px; color:#2196F3;
+            cursor:pointer; font-weight:600;
             text-transform:uppercase;
         }
 
@@ -148,11 +177,8 @@
         .dd-action:first-child { border-right:1px solid var(--border-color); }
 
         .dd-item {
-            padding:9px 12px;
-            cursor:pointer;
-            display:flex;
-            align-items:center;
-            gap:9px;
+            padding:9px 12px; cursor:pointer;
+            display:flex; align-items:center; gap:9px;
             font-size:13px;
             border-bottom:1px solid var(--border-color);
             transition:background .15s;
@@ -173,24 +199,18 @@
         .dd-item.sel .dd-chk { background:#2196F3; border-color:#2196F3; }
 
         .dd-chk::after {
-            content:'';
-            display:none;
+            content:''; display:none;
             width:4px; height:8px;
-            border:solid #fff;
-            border-width:0 2px 2px 0;
-            transform:rotate(45deg);
-            margin-bottom:2px;
+            border:solid #fff; border-width:0 2px 2px 0;
+            transform:rotate(45deg); margin-bottom:2px;
         }
 
         .dd-item.sel .dd-chk::after { display:block; }
-
         .dd-icon { font-size:15px; }
         .dd-name { font-weight:600; }
-        .dd-sub { color:var(--text-secondary); font-size:11px; margin-left:auto; }
+        .dd-sub  { color:var(--text-secondary); font-size:11px; margin-left:auto; }
 
-        .chips {
-            display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;
-        }
+        .chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
 
         .chip {
             display:inline-flex; align-items:center; gap:4px;
@@ -198,49 +218,37 @@
             background:rgba(33,150,243,.12);
             border:1px solid rgba(33,150,243,.3);
             border-radius:20px;
-            font-size:11px;
-            color:#2196F3;
-            font-weight:600;
+            font-size:11px; color:#2196F3; font-weight:600;
         }
 
-        .chip-x {
-            cursor:pointer; color:var(--text-secondary);
-            font-size:13px; line-height:1;
-        }
-
+        .chip-x { cursor:pointer; color:var(--text-secondary); font-size:13px; line-height:1; }
         .chip-x:hover { color:var(--erc-bear); }
 
         .controls input[type=number] {
             background:var(--bg-card-alt);
             border:1px solid var(--border-color);
             color:var(--text-primary);
-            padding:8px 12px;
-            border-radius:6px;
-            font-size:13px;
-            width:75px; height:38px;
+            padding:8px 12px; border-radius:6px;
+            font-size:13px; width:75px; height:38px;
         }
 
         .btn {
-            padding:8px 22px;
-            border:none; border-radius:6px;
+            padding:8px 22px; border:none; border-radius:6px;
             cursor:pointer; font-size:13px; font-weight:600;
-            height:38px;
-            display:inline-flex; align-items:center; gap:5px;
+            height:38px; display:inline-flex; align-items:center; gap:5px;
             transition:all .2s;
         }
 
-        .btn-blue { background:linear-gradient(135deg,#2196F3,#1976D2); color:#fff; }
-        .btn-blue:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(33,150,243,.35); }
+        .btn-blue  { background:linear-gradient(135deg,#2196F3,#1976D2); color:#fff; }
+        .btn-blue:hover  { transform:translateY(-1px); box-shadow:0 4px 14px rgba(33,150,243,.35); }
         .btn-green { background:linear-gradient(135deg,#4caf50,#388e3c); color:#fff; }
         .btn-green:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(76,175,80,.35); }
         .btn:disabled { opacity:.5; cursor:not-allowed; transform:none!important; }
 
         /* ── LOADING ── */
         .loading-overlay {
-            display:none;
-            position:fixed; inset:0;
-            background:rgba(10,14,23,.88);
-            z-index:999;
+            display:none; position:fixed; inset:0;
+            background:rgba(10,14,23,.88); z-index:999;
             justify-content:center; align-items:center;
             flex-direction:column; gap:14px;
         }
@@ -257,45 +265,6 @@
 
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* ── METHODOLOGY BOX ── */
-        .methodology-bar {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 30px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .meth-card {
-            flex: 1;
-            min-width: 160px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            font-size: 12px;
-        }
-
-        .meth-card .meth-title {
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .meth-card .meth-rule {
-            color: var(--text-secondary);
-            font-size: 11px;
-            line-height: 1.5;
-        }
-
-        .meth-card .meth-role {
-            margin-top: 5px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-        }
-
         /* ── SUMMARY ── */
         .summary-section { padding:22px 30px; }
         .summary-section h2 { font-size:17px; margin-bottom:13px; }
@@ -304,20 +273,20 @@
 
         .sum-table {
             width:100%; border-collapse:collapse;
-            background:var(--bg-card); min-width:1100px;
+            background:var(--bg-card); min-width:1150px;
         }
 
         .sum-table th {
             background:var(--bg-card-alt);
-            padding:11px 13px;
-            text-align:left; font-size:11px;
-            text-transform:uppercase; color:var(--text-secondary);
+            padding:11px 12px; text-align:left;
+            font-size:11px; text-transform:uppercase;
+            color:var(--text-secondary);
             border-bottom:1px solid var(--border-color);
             white-space:nowrap;
         }
 
         .sum-table td {
-            padding:10px 13px;
+            padding:10px 12px;
             border-bottom:1px solid var(--border-color);
             font-size:13px;
         }
@@ -341,17 +310,19 @@
             letter-spacing:.5px; white-space:nowrap;
         }
 
-        .b-erc-bull  { background:rgba(33,150,243,.15); color:var(--erc-bull);   border:1px solid rgba(33,150,243,.3); }
-        .b-erc-bear  { background:rgba(244,67,54,.15);  color:var(--erc-bear);   border:1px solid rgba(244,67,54,.3); }
-        .b-ferc      { background:rgba(255,152,0,.15);  color:var(--failed-erc); border:1px solid rgba(255,152,0,.3); }
-        .b-base      { background:rgba(76,175,80,.15);  color:var(--base-color); border:1px solid rgba(76,175,80,.3); }
-        .b-mrb       { background:rgba(233,30,99,.15);  color:var(--marubozu);   border:1px solid rgba(233,30,99,.3); }
-        .b-na        { background:rgba(120,123,134,.15);color:var(--text-secondary); border:1px solid rgba(120,123,134,.3); }
+        .b-erc-bull   { background:rgba(33,150,243,.15);  color:var(--erc-bull);  border:1px solid rgba(33,150,243,.35); }
+        .b-erc-bear   { background:rgba(244,67,54,.15);   color:var(--erc-bear);  border:1px solid rgba(244,67,54,.35); }
+        .b-ferc-bull  { background:rgba(255,193,7,.15);   color:var(--ferc-bull); border:1px solid rgba(255,193,7,.45);
+                        box-shadow: 0 0 6px rgba(255,193,7,.2); }
+        .b-ferc-bear  { background:rgba(230,81,0,.15);    color:var(--ferc-bear); border:1px solid rgba(230,81,0,.45);
+                        box-shadow: 0 0 6px rgba(230,81,0,.2); }
+        .b-base       { background:rgba(76,175,80,.15);   color:var(--base-color);border:1px solid rgba(76,175,80,.35); }
+        .b-mrb        { background:rgba(233,30,99,.15);   color:var(--marubozu);  border:1px solid rgba(233,30,99,.35); }
+        .b-na         { background:rgba(120,123,134,.15); color:var(--text-secondary); border:1px solid rgba(120,123,134,.3); }
 
         .role-badge {
             display:inline-block; padding:2px 7px;
-            border-radius:3px; font-size:10px;
-            font-weight:700; text-transform:uppercase;
+            border-radius:3px; font-size:10px; font-weight:700; text-transform:uppercase;
         }
 
         .role-impulse { background:rgba(255,152,0,.12); color:#ff9800; }
@@ -387,9 +358,8 @@
         }
 
         .tf-tab {
-            padding:9px 26px;
-            cursor:pointer; font-size:13px;
-            color:var(--text-secondary);
+            padding:9px 26px; cursor:pointer;
+            font-size:13px; color:var(--text-secondary);
             border-bottom:2px solid transparent;
             transition:all .2s; user-select:none;
         }
@@ -400,20 +370,22 @@
         .tf-content { display:none; padding:16px 20px; }
         .tf-content.active { display:block; }
 
-        .stats-row {
-            display:flex; gap:9px; margin-bottom:13px; flex-wrap:wrap;
-        }
+        .stats-row { display:flex; gap:9px; margin-bottom:13px; flex-wrap:wrap; }
 
         .stat-card {
-            flex:1; min-width:100px;
+            flex:1; min-width:95px;
             padding:11px 13px;
             background:var(--bg-card-alt);
             border-radius:8px; border:1px solid var(--border-color);
         }
 
         .stat-card .sl { font-size:10px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; }
-        .stat-card .sv { font-size:20px; font-weight:700; }
+        .stat-card .sv { font-size:18px; font-weight:700; }
         .stat-card .ss { font-size:10px; color:var(--text-secondary); margin-top:2px; }
+
+        /* FERC stat cards with split color indicator */
+        .stat-ferc-bull { border-left:3px solid var(--ferc-bull)!important; }
+        .stat-ferc-bear { border-left:3px solid var(--ferc-bear)!important; }
 
         .pct-bar {
             width:100%; height:7px;
@@ -439,31 +411,25 @@
         .tbl-scroll::-webkit-scrollbar { width:5px; }
         .tbl-scroll::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:3px; }
 
-        .det-table {
-            width:100%; border-collapse:collapse; font-size:12px;
-        }
+        .det-table { width:100%; border-collapse:collapse; font-size:12px; }
 
         .det-table th {
             background:var(--bg-card-alt);
-            padding:8px 11px;
-            text-align:left; color:var(--text-secondary);
-            font-size:10px; text-transform:uppercase;
+            padding:8px 11px; text-align:left;
+            color:var(--text-secondary); font-size:10px; text-transform:uppercase;
             position:sticky; top:0; z-index:1;
             border-bottom:1px solid var(--border-color);
         }
 
-        .det-table td {
-            padding:6px 11px;
-            border-bottom:1px solid var(--border-color);
-        }
-
+        .det-table td { padding:6px 11px; border-bottom:1px solid var(--border-color); }
         .det-table tr:last-child td { border-bottom:none; }
         .det-table tr:hover { background:var(--bg-card-alt); }
 
-        /* Row accent */
+        /* Row left-border accents */
         .r-erc-bull  { border-left:3px solid var(--erc-bull); }
         .r-erc-bear  { border-left:3px solid var(--erc-bear); }
-        .r-ferc      { border-left:3px solid var(--failed-erc); }
+        .r-ferc-bull { border-left:3px solid var(--ferc-bull); background:rgba(255,193,7,.03); }
+        .r-ferc-bear { border-left:3px solid var(--ferc-bear); background:rgba(230,81,0,.03); }
         .r-base      { border-left:3px solid var(--base-color); }
         .r-mrb       { border-left:3px solid var(--marubozu); }
 
@@ -473,7 +439,7 @@
             .header,.controls { flex-direction:column; }
             .dd-wrap { width:100%; }
             .detail-section,.summary-section { padding:14px; }
-            .methodology-bar { flex-direction:column; }
+            .meth-bar { flex-direction:column; }
         }
     </style>
 </head>
@@ -483,69 +449,62 @@
 <div class="header">
     <div>
         <h1>📊 Set & Forget Candle Dashboard</h1>
-        <div class="header-sub">Alfonso Moreno — Supply & Demand Methodology</div>
+        <div class="header-sub">Alfonso Moreno — Supply &amp; Demand Methodology</div>
     </div>
     <div class="legend">
         <div class="legend-item">
             <div class="leg-box" style="background:var(--erc-bull)"></div>
-            <span>ERC Bullish (≥75%, closes high)</span>
+            <span>ERC Bull (≥75%↑)</span>
         </div>
         <div class="legend-item">
             <div class="leg-box" style="background:var(--erc-bear)"></div>
-            <span>ERC Bearish (≥75%, closes low)</span>
+            <span>ERC Bear (≥75%↓)</span>
         </div>
         <div class="legend-item">
-            <div class="leg-box" style="background:var(--failed-erc)"></div>
-            <span>Failed ERC (explosive + long wick)</span>
+            <div class="leg-box" style="background:var(--ferc-bull)"></div>
+            <span>FERC Bull ▲ (Amber)</span>
+        </div>
+        <div class="legend-item">
+            <div class="leg-box" style="background:var(--ferc-bear)"></div>
+            <span>FERC Bear ▼ (Burnt)</span>
         </div>
         <div class="legend-item">
             <div class="leg-circle" style="color:var(--base-color)"></div>
-            <span>Base/NRC (quiet, small body)</span>
+            <span>Base / NRC</span>
         </div>
         <div class="legend-item">
             <div class="leg-circle" style="color:var(--marubozu)"></div>
-            <span>Marubozu (≥95%, no wicks)</span>
+            <span>Marubozu</span>
         </div>
     </div>
 </div>
 
 <!-- METHODOLOGY CARDS -->
-<div class="methodology-bar">
+<div class="meth-bar">
     <div class="meth-card" style="border-color:rgba(33,150,243,.3)">
-        <div class="meth-title" style="color:var(--erc-bull)">🔵 ERC — Extended Range Candle</div>
-        <div class="meth-rule">
-            Body ≥ 75% of range<br>
-            Closes near extreme (top/bottom 25%)<br>
-            Strong directional momentum
-        </div>
-        <div class="meth-role" style="color:var(--failed-erc)">✅ Leg-In / Leg-Out</div>
+        <div class="meth-title" style="color:var(--erc-bull)">🔵 ERC</div>
+        <div class="meth-rule">Body ≥ 75% of range<br>Closes near extreme<br>Strong momentum</div>
+        <div class="meth-role" style="color:#ff9800">⚡ Leg-In / Leg-Out</div>
     </div>
-    <div class="meth-card" style="border-color:rgba(255,152,0,.3)">
-        <div class="meth-title" style="color:var(--failed-erc)">🟠 Failed ERC</div>
-        <div class="meth-rule">
-            Body ≤ 50% of range (long wick)<br>
-            BUT range is explosive (≥1.5× avg)<br>
-            Strong move, failed to close at extreme
-        </div>
-        <div class="meth-role" style="color:var(--failed-erc)">✅ Leg-In / Leg-Out (NOT a Base!)</div>
+    <div class="meth-card" style="border-color:rgba(255,193,7,.4)">
+        <div class="meth-title" style="color:var(--ferc-bull)">🟡 FERC Bullish</div>
+        <div class="meth-rule">Explosive range (≥1.5×avg)<br>Body ≤ 50% (long upper wick)<br>Tried to rally, partially failed</div>
+        <div class="meth-role" style="color:#ff9800">⚡ Leg-In / Leg-Out (NOT Base!)</div>
+    </div>
+    <div class="meth-card" style="border-color:rgba(230,81,0,.4)">
+        <div class="meth-title" style="color:var(--ferc-bear)">🟠 FERC Bearish</div>
+        <div class="meth-rule">Explosive range (≥1.5×avg)<br>Body ≤ 50% (long lower wick)<br>Tried to sell, partially failed</div>
+        <div class="meth-role" style="color:#ff9800">⚡ Leg-In / Leg-Out (NOT Base!)</div>
     </div>
     <div class="meth-card" style="border-color:rgba(76,175,80,.3)">
         <div class="meth-title" style="color:var(--base-color)">🟢 Base / NRC</div>
-        <div class="meth-rule">
-            Body ≤ 50% of range<br>
-            Range is SMALL (quiet, low volatility)<br>
-            Clear pause / consolidation
-        </div>
-        <div class="meth-role" style="color:var(--base-color)">✅ Base Zone ONLY</div>
+        <div class="meth-rule">Body ≤ 50%, small quiet range<br>Low volatility consolidation<br>Clear pause in momentum</div>
+        <div class="meth-role" style="color:#4caf50">🟢 Base Zone ONLY</div>
     </div>
     <div class="meth-card" style="border-color:rgba(233,30,99,.3)">
         <div class="meth-title" style="color:var(--marubozu)">🔴 Marubozu</div>
-        <div class="meth-rule">
-            Body ≥ 95% of range<br>
-            Almost no wicks<br>
-            Extreme pure momentum
-        </div>
-        <div class="meth-role" style="color:var(--failed-erc)">✅ Strongest Leg-In / Leg-Out</div>
+        <div class="meth-rule">Body ≥ 95%, no wicks<br>Pure extreme momentum</div>
+        <div class="meth-role" style="color:#ff9800">⚡ Strongest Leg</div>
     </div>
 </div>
 
@@ -567,17 +526,14 @@
         </div>
         <div class="chips" id="chips"></div>
     </div>
-
     <div class="cg">
         <label>Candles</label>
         <input type="number" id="candleCount" value="50" min="10" max="150">
     </div>
-
     <div class="cg">
         <label>&nbsp;</label>
         <button class="btn btn-green" id="btnSum" onclick="loadSummary()">📋 Summary</button>
     </div>
-
     <div class="cg">
         <label>&nbsp;</label>
         <button class="btn btn-blue" id="btnFull" onclick="loadFull()">🔍 Full Analysis</button>
@@ -603,18 +559,18 @@
                     <th colspan="4" class="tfh">📅 Monthly</th>
                 </tr>
                 <tr>
-                    <th class="tfc">Class</th>
+                    <th class="tfc">Classification</th>
                     <th class="tfc">Body%</th>
                     <th class="tfc">Role</th>
-                    <th class="tfc">Dir</th>
-                    <th class="tfc">Class</th>
+                    <th class="tfc">Direction</th>
+                    <th class="tfc">Classification</th>
                     <th class="tfc">Body%</th>
                     <th class="tfc">Role</th>
-                    <th class="tfc">Dir</th>
-                    <th class="tfc">Class</th>
+                    <th class="tfc">Direction</th>
+                    <th class="tfc">Classification</th>
                     <th class="tfc">Body%</th>
                     <th class="tfc">Role</th>
-                    <th class="tfc">Dir</th>
+                    <th class="tfc">Direction</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -626,22 +582,22 @@
 <div class="detail-section" id="detSection"></div>
 
 <script>
-/* ── INSTRUMENTS ───────────────────────────────────── */
+/* ── INSTRUMENTS ─────────────────────────────────── */
 const INSTRUMENTS = [
-    { code:'XAU_USD',    display:'XAU/USD',  name:'Gold',         icon:'🥇' },
-    { code:'US30_USD',   display:'US30',     name:'US30 (Dow)',   icon:'📈' },
-    { code:'NAS100_USD', display:'NAS100',   name:'Nasdaq 100',   icon:'💻' },
-    { code:'EUR_USD',    display:'EUR/USD',  name:'Euro/Dollar',  icon:'💶' },
-    { code:'GBP_USD',    display:'GBP/USD',  name:'Pound/Dollar', icon:'💷' },
-    { code:'GBP_JPY',    display:'GBP/JPY',  name:'Pound/Yen',    icon:'💷' },
-    { code:'USD_JPY',    display:'USD/JPY',  name:'Dollar/Yen',   icon:'💴' },
-    { code:'AUD_USD',    display:'AUD/USD',  name:'Aussie/Dollar',icon:'🦘' }
+    { code:'XAU_USD',    display:'XAU/USD',  name:'Gold',          icon:'🥇' },
+    { code:'US30_USD',   display:'US30',     name:'US30 (Dow)',    icon:'📈' },
+    { code:'NAS100_USD', display:'NAS100',   name:'Nasdaq 100',    icon:'💻' },
+    { code:'EUR_USD',    display:'EUR/USD',  name:'Euro/Dollar',   icon:'💶' },
+    { code:'GBP_USD',    display:'GBP/USD',  name:'Pound/Dollar',  icon:'💷' },
+    { code:'GBP_JPY',    display:'GBP/JPY',  name:'Pound/Yen',     icon:'💷' },
+    { code:'USD_JPY',    display:'USD/JPY',  name:'Dollar/Yen',    icon:'💴' },
+    { code:'AUD_USD',    display:'AUD/USD',  name:'Aussie/Dollar', icon:'🦘' }
 ];
 
 const TFS = ['Daily','Weekly','Monthly'];
 let sel = new Set();
 
-/* ── DROPDOWN ──────────────────────────────────────── */
+/* ── DROPDOWN ────────────────────────────────────── */
 function initDD(){
     const menu = document.getElementById('ddMenu');
     INSTRUMENTS.forEach(inst => {
@@ -671,12 +627,8 @@ document.addEventListener('click', e => {
     }
 });
 
-function toggleInst(code){
-    sel.has(code) ? sel.delete(code) : sel.add(code);
-    updateDD();
-}
-
-function selAll(){ INSTRUMENTS.forEach(i => sel.add(i.code)); updateDD(); }
+function toggleInst(code){ sel.has(code)?sel.delete(code):sel.add(code); updateDD(); }
+function selAll(){ INSTRUMENTS.forEach(i=>sel.add(i.code)); updateDD(); }
 function selNone(){ sel.clear(); updateDD(); }
 function removeChip(code){ sel.delete(code); updateDD(); }
 
@@ -694,15 +646,14 @@ function updateDD(){
     chips.innerHTML='';
     INSTRUMENTS.forEach(i=>{
         if(!sel.has(i.code)) return;
-        const c=document.createElement('span');
-        c.className='chip';
-        c.innerHTML=`${i.icon} ${i.display} <span class="chip-x" onclick="removeChip('${i.code}')">×</span>`;
+        const c = document.createElement('span');
+        c.className = 'chip';
+        c.innerHTML = `${i.icon} ${i.display} <span class="chip-x" onclick="removeChip('${i.code}')">×</span>`;
         chips.appendChild(c);
     });
 
-    const empty = sel.size===0;
-    document.getElementById('btnSum').disabled = empty;
-    document.getElementById('btnFull').disabled = empty;
+    document.getElementById('btnSum').disabled  = sel.size===0;
+    document.getElementById('btnFull').disabled = sel.size===0;
 }
 
 function getSelected(){
@@ -710,46 +661,79 @@ function getSelected(){
 }
 
 function instDisplay(code){
-    const i=INSTRUMENTS.find(x=>x.code===code);
+    const i = INSTRUMENTS.find(x=>x.code===code);
     return i ? `${i.icon} ${i.display}` : code;
 }
 
-/* ── LOADING ───────────────────────────────────────── */
+/* ── LOADING ─────────────────────────────────────── */
 function loading(show, txt='Fetching candles...'){
     document.getElementById('loading').classList.toggle('active',show);
-    document.getElementById('loadTxt').textContent=txt;
+    document.getElementById('loadTxt').textContent = txt;
 }
 
-/* ── BADGE HELPERS ─────────────────────────────────── */
+/* ── CLASSIFICATION HELPERS ──────────────────────── */
+
+/**
+ * Returns the CSS badge class for a candle.
+ * Key: FERC is split into bull (amber) and bear (burnt orange).
+ */
 function badgeCls(cls, dir){
-    if(cls==='Marubozu')                          return 'b-mrb';
-    if(cls==='ERC' && dir==='Bullish')            return 'b-erc-bull';
-    if(cls==='ERC' && dir==='Bearish')            return 'b-erc-bear';
-    if(cls==='Failed ERC')                        return 'b-ferc';
-    if(cls==='Base')                              return 'b-base';
+    if(cls==='Marubozu')                         return 'b-mrb';
+    if(cls==='ERC'        && dir==='Bullish')    return 'b-erc-bull';
+    if(cls==='ERC'        && dir==='Bearish')    return 'b-erc-bear';
+    if(cls==='Failed ERC' && dir==='Bullish')    return 'b-ferc-bull';
+    if(cls==='Failed ERC' && dir==='Bearish')    return 'b-ferc-bear';
+    if(cls==='Failed ERC')                       return 'b-ferc-bull'; // neutral fallback
+    if(cls==='Base')                             return 'b-base';
     return 'b-na';
 }
 
+/**
+ * Returns the table row accent class.
+ */
 function rowCls(cls, dir){
-    if(cls==='Marubozu')               return 'r-mrb';
-    if(cls==='ERC' && dir==='Bullish') return 'r-erc-bull';
-    if(cls==='ERC' && dir==='Bearish') return 'r-erc-bear';
-    if(cls==='Failed ERC')             return 'r-ferc';
-    if(cls==='Base')                   return 'r-base';
+    if(cls==='Marubozu')                         return 'r-mrb';
+    if(cls==='ERC'        && dir==='Bullish')    return 'r-erc-bull';
+    if(cls==='ERC'        && dir==='Bearish')    return 'r-erc-bear';
+    if(cls==='Failed ERC' && dir==='Bullish')    return 'r-ferc-bull';
+    if(cls==='Failed ERC' && dir==='Bearish')    return 'r-ferc-bear';
+    if(cls==='Base')                             return 'r-base';
     return '';
 }
 
+/**
+ * Full label shown in badge — includes arrow for FERC direction.
+ */
+function candleLabel(cls, dir, isMrb){
+    if(isMrb) return 'MARUBOZU';
+    if(cls==='Failed ERC' && dir==='Bullish') return 'FERC ▲';
+    if(cls==='Failed ERC' && dir==='Bearish') return 'FERC ▼';
+    if(cls==='ERC'        && dir==='Bullish') return 'ERC ▲';
+    if(cls==='ERC'        && dir==='Bearish') return 'ERC ▼';
+    return cls;
+}
+
 function roleBadge(role){
-    if(!role || role==='N/A') return '';
-    const cls = role.includes('Leg') ? 'role-impulse' : 'role-base';
-    const lbl = role.includes('Leg') ? '⚡ Impulse' : '🟢 Base';
-    return `<span class="role-badge ${cls}">${lbl}</span>`;
+    if(!role||role==='N/A') return '';
+    const isImpulse = role.includes('Leg');
+    return `<span class="role-badge ${isImpulse?'role-impulse':'role-base'}">${isImpulse?'⚡ Impulse':'🟢 Base'}</span>`;
 }
 
 function dirCls(d){ return d==='Bullish'?'dir-bull':d==='Bearish'?'dir-bear':'dir-neu'; }
 function dirIcon(d){ return d==='Bullish'?'▲':d==='Bearish'?'▼':'—'; }
 
-/* ── SUMMARY ───────────────────────────────────────── */
+/* ── CHART CANDLE COLOR ──────────────────────────── */
+function candleColor(cls, dir){
+    if(cls==='Marubozu')                         return '#e91e63';
+    if(cls==='ERC'        && dir==='Bullish')    return '#2196F3';  // blue
+    if(cls==='ERC'        && dir==='Bearish')    return '#f44336';  // red
+    if(cls==='Failed ERC' && dir==='Bullish')    return '#FFC107';  // amber
+    if(cls==='Failed ERC' && dir==='Bearish')    return '#E65100';  // burnt orange
+    if(cls==='Base')                             return '#37474f';  // muted slate
+    return '#787b86';
+}
+
+/* ── SUMMARY ─────────────────────────────────────── */
 async function loadSummary(){
     const inst = getSelected();
     if(!inst.length) return;
@@ -767,39 +751,39 @@ async function loadSummary(){
 
 function renderSummary(data){
     const tbody = document.querySelector('#sumTable tbody');
-    tbody.innerHTML='';
-    data.forEach(row=>{
-        const tr=document.createElement('tr');
-        let html=`<td><strong>${instDisplay(row.instrument)}</strong></td>`;
-        TFS.forEach(tf=>{
-            const d=row[tf];
-            const bc=badgeCls(d.classification, d.direction);
-            const dc=dirCls(d.direction);
-            const di=dirIcon(d.direction);
-            const lbl=d.is_marubozu?'MARUBOZU':d.classification;
-            html+=`
+    tbody.innerHTML = '';
+    data.forEach(row => {
+        const tr = document.createElement('tr');
+        let html = `<td><strong>${instDisplay(row.instrument)}</strong></td>`;
+        TFS.forEach(tf => {
+            const d   = row[tf];
+            const bc  = badgeCls(d.classification, d.direction);
+            const lbl = candleLabel(d.classification, d.direction, d.is_marubozu);
+            const dc  = dirCls(d.direction);
+            const di  = dirIcon(d.direction);
+            html += `
                 <td class="tfc"><span class="badge ${bc}">${lbl}</span></td>
                 <td class="tfc">${d.body_pct}%</td>
                 <td class="tfc">${roleBadge(d.structural_role)}</td>
                 <td class="tfc ${dc}">${di} ${d.direction}</td>`;
         });
-        tr.innerHTML=html;
+        tr.innerHTML = html;
         tbody.appendChild(tr);
     });
-    document.getElementById('sumSection').style.display='block';
+    document.getElementById('sumSection').style.display = 'block';
     document.getElementById('sumSection').scrollIntoView({behavior:'smooth'});
 }
 
-/* ── FULL ANALYSIS ─────────────────────────────────── */
+/* ── FULL ANALYSIS ───────────────────────────────── */
 async function loadFull(){
-    const inst=getSelected();
+    const inst = getSelected();
     if(!inst.length) return;
-    const cnt=parseInt(document.getElementById('candleCount').value)||50;
+    const cnt = parseInt(document.getElementById('candleCount').value)||50;
     loading(true,`Analyzing ${inst.length} instruments...`);
     try{
-        const r=await fetch('/api/analyze',{
+        const r = await fetch('/api/analyze',{
             method:'POST', headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({instruments:inst, candle_count:cnt})
+            body: JSON.stringify({instruments:inst, candle_count:cnt})
         });
         if(!r.ok) throw new Error(r.status);
         renderDetail(await r.json());
@@ -808,40 +792,50 @@ async function loadFull(){
 }
 
 function renderDetail(data){
-    const cont=document.getElementById('detSection');
-    cont.innerHTML='<h2>🔍 Full Candle Analysis</h2>';
-    const keys=getSelected().filter(k=>data[k]);
+    const cont = document.getElementById('detSection');
+    cont.innerHTML = '<h2>🔍 Full Candle Analysis</h2>';
+    const keys = getSelected().filter(k=>data[k]);
 
-    keys.forEach((inst, idx)=>{
-        const block=document.createElement('div');
-        block.className='inst-block';
+    keys.forEach((inst, idx) => {
+        const block = document.createElement('div');
+        block.className = 'inst-block';
 
-        const tabs=TFS.map((tf,ti)=>
+        const tabs = TFS.map((tf,ti) =>
             `<div class="tf-tab ${ti===0?'active':''}"
                   onclick="switchTab(this,'${tf}','g${idx}')"
                   data-tf="${tf}">${tf}</div>`
         ).join('');
 
-        const contents=TFS.map((tf,ti)=>{
-            const candles=data[inst][tf]||[];
-            const cid=`ch${idx}_${ti}`;
-            const cnts={ERC:0,'Failed ERC':0,Base:0,Marubozu:0};
-            candles.forEach(c=>{
-                if(cnts[c.classification]!==undefined) cnts[c.classification]++;
-            });
-            const tot=candles.length||1;
-            const ep=((cnts.ERC/tot)*100).toFixed(1);
-            const fp=((cnts['Failed ERC']/tot)*100).toFixed(1);
-            const bp=((cnts.Base/tot)*100).toFixed(1);
-            const mp=((cnts.Marubozu/tot)*100).toFixed(1);
+        const contents = TFS.map((tf,ti) => {
+            const candles = data[inst][tf] || [];
+            const cid = `ch${idx}_${ti}`;
 
-            const rows=candles.slice().reverse().map(c=>{
-                const bc=badgeCls(c.classification,c.direction);
-                const rc=rowCls(c.classification,c.direction);
-                const dc=dirCls(c.direction);
-                const di=dirIcon(c.direction);
-                const lbl=c.is_marubozu?'MARUBOZU':c.classification;
-                const explosive=c.is_explosive?'<span style="color:#ff9800;font-size:10px">⚡</span>':'';
+            // Count by type + direction
+            const cnts = {
+                ERC_bull:0, ERC_bear:0,
+                FERC_bull:0, FERC_bear:0,
+                Base:0, Marubozu:0
+            };
+
+            candles.forEach(c => {
+                if(c.is_marubozu||c.classification==='Marubozu') { cnts.Marubozu++; return; }
+                if(c.classification==='ERC'        && c.direction==='Bullish') cnts.ERC_bull++;
+                else if(c.classification==='ERC'   && c.direction==='Bearish') cnts.ERC_bear++;
+                else if(c.classification==='Failed ERC' && c.direction==='Bullish') cnts.FERC_bull++;
+                else if(c.classification==='Failed ERC' && c.direction==='Bearish') cnts.FERC_bear++;
+                else if(c.classification==='Base') cnts.Base++;
+            });
+
+            const tot = candles.length || 1;
+            const pct = v => ((v/tot)*100).toFixed(1);
+
+            const rows = candles.slice().reverse().map(c => {
+                const rc  = rowCls(c.classification, c.direction);
+                const bc  = badgeCls(c.classification, c.direction);
+                const lbl = candleLabel(c.classification, c.direction, c.is_marubozu);
+                const dc  = dirCls(c.direction);
+                const di  = dirIcon(c.direction);
+                const exp = c.is_explosive ? '<span style="color:#ff9800;font-size:10px" title="Explosive range">⚡</span>' : '';
                 return `<tr class="${rc}">
                     <td>${c.time}</td>
                     <td>${c.open}</td>
@@ -850,49 +844,60 @@ function renderDetail(data){
                     <td><strong>${c.close}</strong></td>
                     <td>${c.body_pct}%</td>
                     <td>${c.close_position_pct}%</td>
-                    <td>${c.range_vs_avg}×${explosive}</td>
+                    <td>${c.range_vs_avg}× ${exp}</td>
                     <td><span class="badge ${bc}">${lbl}</span></td>
                     <td>${roleBadge(c.structural_role)}</td>
                     <td class="${dc}">${di} ${c.direction}</td>
                 </tr>`;
-            }).join('')||`<tr><td colspan="11" class="empty">No data</td></tr>`;
+            }).join('') || `<tr><td colspan="11" class="empty">No data</td></tr>`;
 
             return `
             <div class="tf-content ${ti===0?'active':''}" data-tf="${tf}" data-group="g${idx}">
                 <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="sl">ERC</div>
-                        <div class="sv" style="color:var(--erc-bull)">${cnts.ERC}</div>
-                        <div class="ss">${ep}% • Impulse</div>
+                    <div class="stat-card" style="border-left:3px solid var(--erc-bull)">
+                        <div class="sl">ERC ▲ Bull</div>
+                        <div class="sv" style="color:var(--erc-bull)">${cnts.ERC_bull}</div>
+                        <div class="ss">${pct(cnts.ERC_bull)}%</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="sl">Failed ERC</div>
-                        <div class="sv" style="color:var(--failed-erc)">${cnts['Failed ERC']}</div>
-                        <div class="ss">${fp}% • Impulse</div>
+                    <div class="stat-card" style="border-left:3px solid var(--erc-bear)">
+                        <div class="sl">ERC ▼ Bear</div>
+                        <div class="sv" style="color:var(--erc-bear)">${cnts.ERC_bear}</div>
+                        <div class="ss">${pct(cnts.ERC_bear)}%</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card stat-ferc-bull">
+                        <div class="sl">FERC ▲ Bull</div>
+                        <div class="sv" style="color:var(--ferc-bull)">${cnts.FERC_bull}</div>
+                        <div class="ss">${pct(cnts.FERC_bull)}% · Amber</div>
+                    </div>
+                    <div class="stat-card stat-ferc-bear">
+                        <div class="sl">FERC ▼ Bear</div>
+                        <div class="sv" style="color:var(--ferc-bear)">${cnts.FERC_bear}</div>
+                        <div class="ss">${pct(cnts.FERC_bear)}% · Burnt</div>
+                    </div>
+                    <div class="stat-card" style="border-left:3px solid var(--base-color)">
                         <div class="sl">Base / NRC</div>
                         <div class="sv" style="color:var(--base-color)">${cnts.Base}</div>
-                        <div class="ss">${bp}% • Base Zone</div>
+                        <div class="ss">${pct(cnts.Base)}%</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" style="border-left:3px solid var(--marubozu)">
                         <div class="sl">Marubozu</div>
                         <div class="sv" style="color:var(--marubozu)">${cnts.Marubozu}</div>
-                        <div class="ss">${mp}% • Strongest</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="sl">Total</div>
-                        <div class="sv">${candles.length}</div>
-                        <div class="ss">candles</div>
+                        <div class="ss">${pct(cnts.Marubozu)}%</div>
                     </div>
                 </div>
+
+                <!-- Distribution bar -->
                 <div class="pct-bar">
-                    <div class="pct-seg" style="width:${ep}%;background:var(--erc-bull)"></div>
-                    <div class="pct-seg" style="width:${fp}%;background:var(--failed-erc)"></div>
-                    <div class="pct-seg" style="width:${bp}%;background:var(--base-color)"></div>
-                    <div class="pct-seg" style="width:${mp}%;background:var(--marubozu)"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.ERC_bull)}%;background:var(--erc-bull)"  title="ERC Bull"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.ERC_bear)}%;background:var(--erc-bear)"  title="ERC Bear"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.FERC_bull)}%;background:var(--ferc-bull)" title="FERC Bull"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.FERC_bear)}%;background:var(--ferc-bear)" title="FERC Bear"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.Base)}%;background:var(--base-color)"     title="Base"></div>
+                    <div class="pct-seg" style="width:${pct(cnts.Marubozu)}%;background:var(--marubozu)"   title="Marubozu"></div>
                 </div>
+
                 <div class="chart-box" id="${cid}"></div>
+
                 <div class="tbl-scroll">
                     <table class="det-table">
                         <thead><tr>
@@ -906,14 +911,14 @@ function renderDetail(data){
             </div>`;
         }).join('');
 
-        block.innerHTML=`
+        block.innerHTML = `
             <div class="inst-header">${instDisplay(inst)}</div>
             <div class="tf-tabs" data-group="g${idx}">${tabs}</div>
             ${contents}`;
         cont.appendChild(block);
 
         setTimeout(()=>{
-            TFS.forEach((tf,ti)=>{
+            TFS.forEach((tf,ti) => {
                 renderChart(`ch${idx}_${ti}`, data[inst][tf]||[]);
             });
         },150);
@@ -923,7 +928,7 @@ function renderDetail(data){
 }
 
 function switchTab(el,tf,grp){
-    const blk=el.closest('.inst-block');
+    const blk = el.closest('.inst-block');
     blk.querySelectorAll(`.tf-tabs[data-group="${grp}"] .tf-tab`).forEach(t=>t.classList.remove('active'));
     el.classList.add('active');
     blk.querySelectorAll(`.tf-content[data-group="${grp}"]`).forEach(c=>{
@@ -931,75 +936,75 @@ function switchTab(el,tf,grp){
     });
 }
 
-/* ── CHART ─────────────────────────────────────────── */
+/* ── CHART ───────────────────────────────────────── */
 function renderChart(id, candles){
-    const box=document.getElementById(id);
-    if(!box||!candles.length){ if(box) box.innerHTML=`<div class="empty">No data</div>`; return; }
+    const box = document.getElementById(id);
+    if(!box||!candles.length){
+        if(box) box.innerHTML=`<div class="empty">No data</div>`;
+        return;
+    }
     box.innerHTML='';
 
-    const chart=LightweightCharts.createChart(box,{
-        width:box.clientWidth, height:360,
-        layout:{background:{color:'#0a0e17'},textColor:'#787b86'},
-        grid:{vertLines:{color:'#1c2030'},horzLines:{color:'#1c2030'}},
-        crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
-        rightPriceScale:{borderColor:'#2a2e39'},
-        timeScale:{borderColor:'#2a2e39',timeVisible:true},
+    const chart = LightweightCharts.createChart(box,{
+        width: box.clientWidth, height: 360,
+        layout: { background:{color:'#0a0e17'}, textColor:'#787b86' },
+        grid:   { vertLines:{color:'#1c2030'}, horzLines:{color:'#1c2030'} },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor:'#2a2e39' },
+        timeScale: { borderColor:'#2a2e39', timeVisible:true },
     });
 
-    box._chart=chart;
+    box._chart = chart;
 
-    const cs=chart.addCandlestickSeries({
+    const cs = chart.addCandlestickSeries({
         upColor:'#26a69a', downColor:'#ef5350',
         borderUpColor:'#26a69a', borderDownColor:'#ef5350',
         wickUpColor:'#26a69a', wickDownColor:'#ef5350',
     });
 
-    // Color each candle by classification
-    const chartData=candles.map(c=>{
-        let col;
-        if(c.classification==='Marubozu'){
-            col=c.direction==='Bullish'?'#e91e63':'#c2185b';
-        } else if(c.classification==='ERC'){
-            // Blue = Bullish ERC, Red = Bearish ERC
-            col=c.direction==='Bullish'?'#2196F3':'#f44336';
-        } else if(c.classification==='Failed ERC'){
-            // Orange = Failed ERC (both directions)
-            col='#ff9800';
-        } else {
-            // Base = green circled area (use muted color for body)
-            col='#37474f';
-        }
-        return { time:c.time, open:c.open, high:c.high, low:c.low, close:c.close,
-                 color:col, borderColor:col, wickColor:col };
+    // Color each candle individually
+    const chartData = candles.map(c => {
+        const col = candleColor(c.classification, c.direction);
+        return {
+            time:c.time, open:c.open, high:c.high, low:c.low, close:c.close,
+            color:col, borderColor:col, wickColor:col
+        };
     });
 
     cs.setData(chartData);
 
-    // Markers
-    const markers=candles.map(c=>{
-        let color,shape,position,text;
+    // Markers — FERC bull vs bear clearly differentiated
+    const markers = candles.map(c => {
+        let color, shape, position, text;
 
-        if(c.classification==='Marubozu'){
-            color='#e91e63';
-            shape='circle';
-            position=c.direction==='Bullish'?'belowBar':'aboveBar';
-            text='MRB';
+        if(c.is_marubozu || c.classification==='Marubozu'){
+            color    = '#e91e63';
+            shape    = 'circle';
+            position = c.direction==='Bullish' ? 'belowBar' : 'aboveBar';
+            text     = '⭕MRB';
+
         } else if(c.classification==='ERC'){
             if(c.direction==='Bullish'){
-                color='#2196F3'; shape='arrowUp'; position='belowBar'; text='ERC';
+                color='#2196F3'; shape='arrowUp'; position='belowBar'; text='ERC▲';
             } else {
-                color='#f44336'; shape='arrowDown'; position='aboveBar'; text='ERC';
+                color='#f44336'; shape='arrowDown'; position='aboveBar'; text='ERC▼';
             }
+
         } else if(c.classification==='Failed ERC'){
-            color='#ff9800'; shape='square';
-            position=c.direction==='Bullish'?'belowBar':'aboveBar';
-            text='FERC';
+            if(c.direction==='Bullish'){
+                // Amber + arrow up = FERC bullish
+                color='#FFC107'; shape='arrowUp'; position='belowBar'; text='FERC▲';
+            } else {
+                // Burnt orange + arrow down = FERC bearish
+                color='#E65100'; shape='arrowDown'; position='aboveBar'; text='FERC▼';
+            }
+
         } else {
-            // Base — green dot ON the candle body
+            // Base: green dot on the candle
             color='#4caf50'; shape='circle'; position='inBar'; text='';
         }
 
-        return {time:c.time, position, color, shape, text, size:0.6};
+        return { time:c.time, position, color, shape, text, size:0.6 };
     });
 
     cs.setMarkers(markers);
@@ -1008,7 +1013,7 @@ function renderChart(id, candles){
     new ResizeObserver(()=>chart.applyOptions({width:box.clientWidth})).observe(box);
 }
 
-/* ── INIT ───────────────────────────────────────────── */
+/* ── INIT ────────────────────────────────────────── */
 initDD();
 </script>
 </body>
