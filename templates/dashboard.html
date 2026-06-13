@@ -3,61 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candle Classification Dashboard</title>
+    <title>Set & Forget Candle Dashboard</title>
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --erc-bull: #2196F3;
-            --erc-bear: #f44336;
-            --failed-erc: #ff9800;
-            --base-color: #4caf50;
-            --marubozu: #e91e63;
-            --bg-dark: #0a0e17;
-            --bg-card: #131722;
+            --erc-bull:    #2196F3;
+            --erc-bear:    #f44336;
+            --failed-erc:  #ff9800;
+            --base-color:  #4caf50;
+            --marubozu:    #e91e63;
+            --bg-dark:     #0a0e17;
+            --bg-card:     #131722;
             --bg-card-alt: #1c2030;
-            --text-primary: #d1d4dc;
+            --text-primary:   #d1d4dc;
             --text-secondary: #787b86;
-            --border-color: #2a2e39;
+            --border-color:   #2a2e39;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;
         }
 
+        /* ── HEADER ── */
         .header {
-            background: linear-gradient(135deg, #131722 0%, #1c2030 100%);
-            padding: 20px 30px;
+            background: linear-gradient(135deg,#131722,#1c2030);
+            padding: 18px 30px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 14px;
         }
 
         .header h1 {
-            font-size: 24px;
-            background: linear-gradient(90deg, #2196F3, #4caf50);
+            font-size: 22px;
+            background: linear-gradient(90deg,#2196F3,#4caf50);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .header-sub {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
+        .header-sub { font-size:11px; color:var(--text-secondary); margin-top:3px; }
 
         .legend {
             display: flex;
-            gap: 16px;
-            align-items: center;
+            gap: 14px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .legend-item {
@@ -67,620 +64,557 @@
             font-size: 12px;
         }
 
-        .legend-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
+        .leg-box {
+            width:14px; height:14px;
+            border-radius:3px;
         }
 
-        .legend-dot-circle {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid var(--base-color);
+        .leg-circle {
+            width:14px; height:14px;
+            border-radius:50%;
+            border:2.5px solid currentColor;
             background: transparent;
         }
 
-        .legend-dot-ring {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid var(--marubozu);
-            background: transparent;
-        }
-
-        /* CONTROLS */
+        /* ── CONTROLS ── */
         .controls {
             background: var(--bg-card);
-            padding: 15px 30px;
+            padding: 14px 30px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 15px;
+            gap: 14px;
             align-items: flex-end;
             flex-wrap: wrap;
         }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        .cg { display:flex; flex-direction:column; gap:5px; }
+        .cg label { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; }
 
-        .control-group label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        /* Dropdown */
+        .dd-wrap { position:relative; width:300px; }
 
-        .dropdown-wrapper {
-            position: relative;
-            width: 320px;
-        }
-
-        .dropdown-trigger {
+        .dd-trigger {
             background: var(--bg-card-alt);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 9px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 13px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            min-height: 40px;
+            height: 38px;
             user-select: none;
-            transition: border-color 0.2s;
         }
 
-        .dropdown-trigger:hover { border-color: #2196F3; }
-        .dropdown-trigger.open { border-color: #2196F3; border-radius: 6px 6px 0 0; }
+        .dd-trigger:hover, .dd-trigger.open { border-color:#2196F3; }
+        .dd-trigger.open { border-radius:6px 6px 0 0; }
 
-        .dropdown-arrow {
-            transition: transform 0.2s;
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
+        .dd-arrow { font-size:10px; color:var(--text-secondary); transition:transform .2s; }
+        .dd-trigger.open .dd-arrow { transform:rotate(180deg); }
 
-        .dropdown-trigger.open .dropdown-arrow { transform: rotate(180deg); }
-
-        .selected-text {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .dropdown-menu {
+        .dd-menu {
             display: none;
             position: absolute;
-            top: 100%;
-            left: 0; right: 0;
+            top: 100%; left:0; right:0;
             background: var(--bg-card-alt);
             border: 1px solid #2196F3;
             border-top: none;
             border-radius: 0 0 6px 6px;
-            z-index: 100;
-            max-height: 300px;
+            z-index: 200;
+            max-height: 280px;
             overflow-y: auto;
         }
 
-        .dropdown-menu.open { display: block; }
+        .dd-menu.open { display:block; }
 
-        .dropdown-item {
-            padding: 10px 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            transition: background 0.15s;
-            border-bottom: 1px solid var(--border-color);
+        .dd-actions {
+            display:flex;
+            border-bottom:1px solid var(--border-color);
         }
 
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: rgba(33,150,243,0.1); }
-        .dropdown-item.selected { background: rgba(33,150,243,0.08); }
-
-        .item-checkbox {
-            width: 18px; height: 18px;
-            border: 2px solid var(--border-color);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+        .dd-action {
+            flex:1; padding:7px;
+            text-align:center;
+            font-size:11px;
+            color:#2196F3;
+            cursor:pointer;
+            font-weight:600;
+            text-transform:uppercase;
         }
 
-        .dropdown-item.selected .item-checkbox {
-            background: #2196F3;
-            border-color: #2196F3;
+        .dd-action:hover { background:rgba(33,150,243,.1); }
+        .dd-action:first-child { border-right:1px solid var(--border-color); }
+
+        .dd-item {
+            padding:9px 12px;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            gap:9px;
+            font-size:13px;
+            border-bottom:1px solid var(--border-color);
+            transition:background .15s;
         }
 
-        .item-checkbox::after {
-            content: '';
-            display: none;
-            width: 5px; height: 9px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-            margin-bottom: 2px;
+        .dd-item:last-child { border-bottom:none; }
+        .dd-item:hover { background:rgba(33,150,243,.08); }
+        .dd-item.sel { background:rgba(33,150,243,.06); }
+
+        .dd-chk {
+            width:17px; height:17px;
+            border:2px solid var(--border-color);
+            border-radius:4px;
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0;
         }
 
-        .dropdown-item.selected .item-checkbox::after { display: block; }
+        .dd-item.sel .dd-chk { background:#2196F3; border-color:#2196F3; }
 
-        .item-icon { font-size: 16px; }
-        .item-name { font-weight: 600; }
-        .item-code { color: var(--text-secondary); font-size: 11px; margin-left: auto; }
-
-        .dropdown-actions {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
+        .dd-chk::after {
+            content:'';
+            display:none;
+            width:4px; height:8px;
+            border:solid #fff;
+            border-width:0 2px 2px 0;
+            transform:rotate(45deg);
+            margin-bottom:2px;
         }
 
-        .dropdown-action-btn {
-            flex: 1;
-            padding: 8px;
-            text-align: center;
-            font-size: 11px;
-            color: #2196F3;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
+        .dd-item.sel .dd-chk::after { display:block; }
 
-        .dropdown-action-btn:hover { background: rgba(33,150,243,0.1); }
-        .dropdown-action-btn:first-child { border-right: 1px solid var(--border-color); }
+        .dd-icon { font-size:15px; }
+        .dd-name { font-weight:600; }
+        .dd-sub { color:var(--text-secondary); font-size:11px; margin-left:auto; }
 
-        .selected-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
+        .chips {
+            display:flex; flex-wrap:wrap; gap:5px; margin-top:6px;
         }
 
         .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            background: rgba(33,150,243,0.12);
-            border: 1px solid rgba(33,150,243,0.3);
-            border-radius: 20px;
-            font-size: 12px;
-            color: #2196F3;
-            font-weight: 600;
+            display:inline-flex; align-items:center; gap:4px;
+            padding:3px 9px;
+            background:rgba(33,150,243,.12);
+            border:1px solid rgba(33,150,243,.3);
+            border-radius:20px;
+            font-size:11px;
+            color:#2196F3;
+            font-weight:600;
         }
 
-        .chip-remove {
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1;
+        .chip-x {
+            cursor:pointer; color:var(--text-secondary);
+            font-size:13px; line-height:1;
         }
 
-        .chip-remove:hover { color: var(--erc-bear); }
+        .chip-x:hover { color:var(--erc-bear); }
 
-        .controls input[type="number"] {
-            background: var(--bg-card-alt);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 9px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            width: 80px;
-            height: 40px;
+        .controls input[type=number] {
+            background:var(--bg-card-alt);
+            border:1px solid var(--border-color);
+            color:var(--text-primary);
+            padding:8px 12px;
+            border-radius:6px;
+            font-size:13px;
+            width:75px; height:38px;
         }
-
-        .controls input[type="number"]:focus { border-color: #2196F3; outline: none; }
 
         .btn {
-            padding: 9px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-            height: 40px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            padding:8px 22px;
+            border:none; border-radius:6px;
+            cursor:pointer; font-size:13px; font-weight:600;
+            height:38px;
+            display:inline-flex; align-items:center; gap:5px;
+            transition:all .2s;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #2196F3, #1976D2);
-            color: white;
-        }
+        .btn-blue { background:linear-gradient(135deg,#2196F3,#1976D2); color:#fff; }
+        .btn-blue:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(33,150,243,.35); }
+        .btn-green { background:linear-gradient(135deg,#4caf50,#388e3c); color:#fff; }
+        .btn-green:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(76,175,80,.35); }
+        .btn:disabled { opacity:.5; cursor:not-allowed; transform:none!important; }
 
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(33,150,243,0.3); }
-
-        .btn-summary {
-            background: linear-gradient(135deg, #4caf50, #388e3c);
-            color: white;
-        }
-
-        .btn-summary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(76,175,80,0.3); }
-
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-
-        /* LOADING */
+        /* ── LOADING ── */
         .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(10,14,23,0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 15px;
+            display:none;
+            position:fixed; inset:0;
+            background:rgba(10,14,23,.88);
+            z-index:999;
+            justify-content:center; align-items:center;
+            flex-direction:column; gap:14px;
         }
 
-        .loading-overlay.active { display: flex; }
+        .loading-overlay.active { display:flex; }
 
         .spinner {
-            width: 55px; height: 55px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid #2196F3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width:52px; height:52px;
+            border:4px solid var(--border-color);
+            border-top-color:#2196F3;
+            border-radius:50%;
+            animation:spin 1s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
-        .loading-text { font-size: 15px; }
-
-        /* SUMMARY TABLE */
-        .summary-section { padding: 25px 30px; }
-        .summary-section h2 { font-size: 18px; margin-bottom: 15px; }
-
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
+        /* ── METHODOLOGY BOX ── */
+        .methodology-bar {
             background: var(--bg-card);
-            min-width: 1000px;
-        }
-
-        .summary-table th {
-            background: var(--bg-card-alt);
-            padding: 12px 14px;
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
             border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-        }
-
-        .summary-table td {
-            padding: 11px 14px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-        }
-
-        .summary-table tr:last-child td { border-bottom: none; }
-        .summary-table tr:hover { background: var(--bg-card-alt); }
-
-        .tf-header {
-            background: linear-gradient(135deg, #1c2030, #252a3a) !important;
-            color: #2196F3 !important;
-            text-align: center !important;
-            border-left: 2px solid var(--border-color);
-        }
-
-        .tf-cell {
-            border-left: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        /* BADGES */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .badge-erc-bull {
-            background: rgba(33,150,243,0.15);
-            color: var(--erc-bull);
-            border: 1px solid rgba(33,150,243,0.3);
-        }
-
-        .badge-erc-bear {
-            background: rgba(244,67,54,0.15);
-            color: var(--erc-bear);
-            border: 1px solid rgba(244,67,54,0.3);
-        }
-
-        .badge-failed-erc {
-            background: rgba(255,152,0,0.15);
-            color: var(--failed-erc);
-            border: 1px solid rgba(255,152,0,0.3);
-        }
-
-        .badge-base {
-            background: rgba(76,175,80,0.15);
-            color: var(--base-color);
-            border: 1px solid rgba(76,175,80,0.3);
-        }
-
-        .badge-marubozu {
-            background: rgba(233,30,99,0.15);
-            color: var(--marubozu);
-            border: 1px solid rgba(233,30,99,0.3);
-        }
-
-        .badge-na {
-            background: rgba(120,123,134,0.15);
-            color: var(--text-secondary);
-            border: 1px solid rgba(120,123,134,0.3);
-        }
-
-        .dir-bull { color: var(--erc-bull); font-weight: 600; }
-        .dir-bear { color: var(--erc-bear); font-weight: 600; }
-        .dir-neutral { color: var(--text-secondary); }
-
-        /* DETAIL */
-        .detail-section { padding: 0 30px 30px; }
-
-        .detail-section h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-            padding-top: 10px;
-        }
-
-        .instrument-block {
-            margin-bottom: 25px;
-            background: var(--bg-card);
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        .instrument-header {
-            background: linear-gradient(135deg, #1c2030, #252a3a);
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: 700;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .timeframe-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-card);
-        }
-
-        .tf-tab {
-            padding: 10px 28px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--text-secondary);
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .tf-tab:hover { color: var(--text-primary); background: var(--bg-card-alt); }
-
-        .tf-tab.active {
-            color: #2196F3;
-            border-bottom-color: #2196F3;
-            background: var(--bg-card-alt);
-        }
-
-        .tf-content { display: none; padding: 18px 20px; }
-        .tf-content.active { display: block; }
-
-        .stats-bar {
+            padding: 12px 30px;
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
             flex-wrap: wrap;
         }
 
-        .stat-card {
+        .meth-card {
             flex: 1;
-            min-width: 100px;
-            padding: 12px 14px;
-            background: var(--bg-card-alt);
+            min-width: 160px;
+            padding: 10px 14px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-        }
-
-        .stat-label {
-            font-size: 10px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .stat-value { font-size: 20px; font-weight: 700; }
-        .stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-
-        .pct-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--bg-dark);
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            margin-bottom: 18px;
-        }
-
-        .pct-bar-segment { height: 100%; transition: width 0.5s ease; }
-
-        .chart-container {
-            width: 100%;
-            height: 360px;
-            margin-bottom: 18px;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .table-scroll {
-            max-height: 280px;
-            overflow-y: auto;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .table-scroll::-webkit-scrollbar { width: 6px; }
-        .table-scroll::-webkit-scrollbar-track { background: var(--bg-card); }
-        .table-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-
-        .detail-table {
-            width: 100%;
-            border-collapse: collapse;
             font-size: 12px;
         }
 
-        .detail-table th {
-            background: var(--bg-card-alt);
-            padding: 9px 12px;
-            text-align: left;
+        .meth-card .meth-title {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .meth-card .meth-rule {
             color: var(--text-secondary);
             font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .meth-card .meth-role {
+            margin-top: 5px;
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            border-bottom: 1px solid var(--border-color);
+            letter-spacing: .5px;
         }
 
-        .detail-table td {
-            padding: 7px 12px;
-            border-bottom: 1px solid var(--border-color);
+        /* ── SUMMARY ── */
+        .summary-section { padding:22px 30px; }
+        .summary-section h2 { font-size:17px; margin-bottom:13px; }
+
+        .tw { overflow-x:auto; border-radius:8px; border:1px solid var(--border-color); }
+
+        .sum-table {
+            width:100%; border-collapse:collapse;
+            background:var(--bg-card); min-width:1100px;
         }
 
-        .detail-table tr:last-child td { border-bottom: none; }
-        .detail-table tr:hover { background: var(--bg-card-alt); }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-secondary);
-            font-size: 14px;
+        .sum-table th {
+            background:var(--bg-card-alt);
+            padding:11px 13px;
+            text-align:left; font-size:11px;
+            text-transform:uppercase; color:var(--text-secondary);
+            border-bottom:1px solid var(--border-color);
+            white-space:nowrap;
         }
 
-        /* Row highlighting based on classification */
-        .row-erc-bull { border-left: 3px solid var(--erc-bull); }
-        .row-erc-bear { border-left: 3px solid var(--erc-bear); }
-        .row-failed-erc { border-left: 3px solid var(--failed-erc); }
-        .row-base { border-left: 3px solid var(--base-color); }
-        .row-marubozu { border-left: 3px solid var(--marubozu); }
+        .sum-table td {
+            padding:10px 13px;
+            border-bottom:1px solid var(--border-color);
+            font-size:13px;
+        }
 
-        @media (max-width: 768px) {
-            .header { flex-direction: column; }
-            .controls { flex-direction: column; align-items: stretch; }
-            .dropdown-wrapper { width: 100%; }
-            .detail-section, .summary-section { padding: 15px; }
-            .legend { gap: 10px; }
+        .sum-table tr:last-child td { border-bottom:none; }
+        .sum-table tr:hover { background:var(--bg-card-alt); }
+
+        .tfh {
+            background:linear-gradient(135deg,#1c2030,#252a3a)!important;
+            color:#2196F3!important; text-align:center!important;
+            border-left:2px solid var(--border-color);
+        }
+
+        .tfc { border-left:1px solid var(--border-color); text-align:center; }
+
+        /* ── BADGES ── */
+        .badge {
+            display:inline-block; padding:3px 9px;
+            border-radius:4px; font-size:11px;
+            font-weight:700; text-transform:uppercase;
+            letter-spacing:.5px; white-space:nowrap;
+        }
+
+        .b-erc-bull  { background:rgba(33,150,243,.15); color:var(--erc-bull);   border:1px solid rgba(33,150,243,.3); }
+        .b-erc-bear  { background:rgba(244,67,54,.15);  color:var(--erc-bear);   border:1px solid rgba(244,67,54,.3); }
+        .b-ferc      { background:rgba(255,152,0,.15);  color:var(--failed-erc); border:1px solid rgba(255,152,0,.3); }
+        .b-base      { background:rgba(76,175,80,.15);  color:var(--base-color); border:1px solid rgba(76,175,80,.3); }
+        .b-mrb       { background:rgba(233,30,99,.15);  color:var(--marubozu);   border:1px solid rgba(233,30,99,.3); }
+        .b-na        { background:rgba(120,123,134,.15);color:var(--text-secondary); border:1px solid rgba(120,123,134,.3); }
+
+        .role-badge {
+            display:inline-block; padding:2px 7px;
+            border-radius:3px; font-size:10px;
+            font-weight:700; text-transform:uppercase;
+        }
+
+        .role-impulse { background:rgba(255,152,0,.12); color:#ff9800; }
+        .role-base    { background:rgba(76,175,80,.12);  color:#4caf50; }
+
+        .dir-bull { color:var(--erc-bull); font-weight:600; }
+        .dir-bear { color:var(--erc-bear); font-weight:600; }
+        .dir-neu  { color:var(--text-secondary); }
+
+        /* ── DETAIL ── */
+        .detail-section { padding:0 30px 30px; }
+        .detail-section h2 { font-size:17px; margin-bottom:13px; padding-top:8px; }
+
+        .inst-block {
+            margin-bottom:22px;
+            background:var(--bg-card);
+            border-radius:10px;
+            border:1px solid var(--border-color);
+            overflow:hidden;
+        }
+
+        .inst-header {
+            background:linear-gradient(135deg,#1c2030,#252a3a);
+            padding:13px 20px;
+            font-size:15px; font-weight:700;
+            border-bottom:1px solid var(--border-color);
+        }
+
+        .tf-tabs {
+            display:flex;
+            border-bottom:1px solid var(--border-color);
+            background:var(--bg-card);
+        }
+
+        .tf-tab {
+            padding:9px 26px;
+            cursor:pointer; font-size:13px;
+            color:var(--text-secondary);
+            border-bottom:2px solid transparent;
+            transition:all .2s; user-select:none;
+        }
+
+        .tf-tab:hover { color:var(--text-primary); background:var(--bg-card-alt); }
+        .tf-tab.active { color:#2196F3; border-bottom-color:#2196F3; background:var(--bg-card-alt); }
+
+        .tf-content { display:none; padding:16px 20px; }
+        .tf-content.active { display:block; }
+
+        .stats-row {
+            display:flex; gap:9px; margin-bottom:13px; flex-wrap:wrap;
+        }
+
+        .stat-card {
+            flex:1; min-width:100px;
+            padding:11px 13px;
+            background:var(--bg-card-alt);
+            border-radius:8px; border:1px solid var(--border-color);
+        }
+
+        .stat-card .sl { font-size:10px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; }
+        .stat-card .sv { font-size:20px; font-weight:700; }
+        .stat-card .ss { font-size:10px; color:var(--text-secondary); margin-top:2px; }
+
+        .pct-bar {
+            width:100%; height:7px;
+            background:var(--bg-dark);
+            border-radius:4px; overflow:hidden;
+            display:flex; margin-bottom:16px;
+        }
+
+        .pct-seg { height:100%; transition:width .5s ease; }
+
+        .chart-box {
+            width:100%; height:360px;
+            margin-bottom:16px;
+            border-radius:6px; overflow:hidden;
+            border:1px solid var(--border-color);
+        }
+
+        .tbl-scroll {
+            max-height:280px; overflow-y:auto;
+            border-radius:6px; border:1px solid var(--border-color);
+        }
+
+        .tbl-scroll::-webkit-scrollbar { width:5px; }
+        .tbl-scroll::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:3px; }
+
+        .det-table {
+            width:100%; border-collapse:collapse; font-size:12px;
+        }
+
+        .det-table th {
+            background:var(--bg-card-alt);
+            padding:8px 11px;
+            text-align:left; color:var(--text-secondary);
+            font-size:10px; text-transform:uppercase;
+            position:sticky; top:0; z-index:1;
+            border-bottom:1px solid var(--border-color);
+        }
+
+        .det-table td {
+            padding:6px 11px;
+            border-bottom:1px solid var(--border-color);
+        }
+
+        .det-table tr:last-child td { border-bottom:none; }
+        .det-table tr:hover { background:var(--bg-card-alt); }
+
+        /* Row accent */
+        .r-erc-bull  { border-left:3px solid var(--erc-bull); }
+        .r-erc-bear  { border-left:3px solid var(--erc-bear); }
+        .r-ferc      { border-left:3px solid var(--failed-erc); }
+        .r-base      { border-left:3px solid var(--base-color); }
+        .r-mrb       { border-left:3px solid var(--marubozu); }
+
+        .empty { text-align:center; padding:36px; color:var(--text-secondary); font-size:13px; }
+
+        @media(max-width:768px){
+            .header,.controls { flex-direction:column; }
+            .dd-wrap { width:100%; }
+            .detail-section,.summary-section { padding:14px; }
+            .methodology-bar { flex-direction:column; }
         }
     </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
     <div>
-        <h1>📊 Candle Classification Dashboard</h1>
-        <div class="header-sub">ERC • Failed ERC • Base • Marubozu Analyzer</div>
+        <h1>📊 Set & Forget Candle Dashboard</h1>
+        <div class="header-sub">Alfonso Moreno — Supply & Demand Methodology</div>
     </div>
     <div class="legend">
         <div class="legend-item">
-            <div class="legend-dot" style="background:var(--erc-bull)"></div>
-            <span>ERC Bullish (≥80%)</span>
+            <div class="leg-box" style="background:var(--erc-bull)"></div>
+            <span>ERC Bullish (≥75%, closes high)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:var(--erc-bear)"></div>
-            <span>ERC Bearish (≥80%)</span>
+            <div class="leg-box" style="background:var(--erc-bear)"></div>
+            <span>ERC Bearish (≥75%, closes low)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:var(--failed-erc)"></div>
-            <span>Failed ERC (50-80%)</span>
+            <div class="leg-box" style="background:var(--failed-erc)"></div>
+            <span>Failed ERC (explosive + long wick)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot-circle"></div>
-            <span>Base (&lt;50%)</span>
+            <div class="leg-circle" style="color:var(--base-color)"></div>
+            <span>Base/NRC (quiet, small body)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot-ring"></div>
-            <span>Marubozu (≥95%)</span>
+            <div class="leg-circle" style="color:var(--marubozu)"></div>
+            <span>Marubozu (≥95%, no wicks)</span>
         </div>
     </div>
 </div>
 
+<!-- METHODOLOGY CARDS -->
+<div class="methodology-bar">
+    <div class="meth-card" style="border-color:rgba(33,150,243,.3)">
+        <div class="meth-title" style="color:var(--erc-bull)">🔵 ERC — Extended Range Candle</div>
+        <div class="meth-rule">
+            Body ≥ 75% of range<br>
+            Closes near extreme (top/bottom 25%)<br>
+            Strong directional momentum
+        </div>
+        <div class="meth-role" style="color:var(--failed-erc)">✅ Leg-In / Leg-Out</div>
+    </div>
+    <div class="meth-card" style="border-color:rgba(255,152,0,.3)">
+        <div class="meth-title" style="color:var(--failed-erc)">🟠 Failed ERC</div>
+        <div class="meth-rule">
+            Body ≤ 50% of range (long wick)<br>
+            BUT range is explosive (≥1.5× avg)<br>
+            Strong move, failed to close at extreme
+        </div>
+        <div class="meth-role" style="color:var(--failed-erc)">✅ Leg-In / Leg-Out (NOT a Base!)</div>
+    </div>
+    <div class="meth-card" style="border-color:rgba(76,175,80,.3)">
+        <div class="meth-title" style="color:var(--base-color)">🟢 Base / NRC</div>
+        <div class="meth-rule">
+            Body ≤ 50% of range<br>
+            Range is SMALL (quiet, low volatility)<br>
+            Clear pause / consolidation
+        </div>
+        <div class="meth-role" style="color:var(--base-color)">✅ Base Zone ONLY</div>
+    </div>
+    <div class="meth-card" style="border-color:rgba(233,30,99,.3)">
+        <div class="meth-title" style="color:var(--marubozu)">🔴 Marubozu</div>
+        <div class="meth-rule">
+            Body ≥ 95% of range<br>
+            Almost no wicks<br>
+            Extreme pure momentum
+        </div>
+        <div class="meth-role" style="color:var(--failed-erc)">✅ Strongest Leg-In / Leg-Out</div>
+    </div>
+</div>
+
+<!-- CONTROLS -->
 <div class="controls">
-    <div class="control-group">
+    <div class="cg">
         <label>Select Instruments</label>
-        <div class="dropdown-wrapper" id="dropdownWrapper">
-            <div class="dropdown-trigger" id="dropdownTrigger" onclick="toggleDropdown()">
-                <span class="selected-text" id="selectedText">Select instruments...</span>
-                <span class="dropdown-arrow">▼</span>
+        <div class="dd-wrap" id="ddWrap">
+            <div class="dd-trigger" id="ddTrigger" onclick="toggleDD()">
+                <span id="ddText">Select instruments...</span>
+                <span class="dd-arrow">▼</span>
             </div>
-            <div class="dropdown-menu" id="dropdownMenu">
-                <div class="dropdown-actions">
-                    <div class="dropdown-action-btn" onclick="selectAll()">✅ Select All</div>
-                    <div class="dropdown-action-btn" onclick="deselectAll()">❌ Clear All</div>
+            <div class="dd-menu" id="ddMenu">
+                <div class="dd-actions">
+                    <div class="dd-action" onclick="selAll()">✅ All</div>
+                    <div class="dd-action" onclick="selNone()">❌ Clear</div>
                 </div>
             </div>
         </div>
-        <div class="selected-chips" id="selectedChips"></div>
+        <div class="chips" id="chips"></div>
     </div>
-    <div class="control-group">
+
+    <div class="cg">
         <label>Candles</label>
-        <input type="number" id="candleCount" value="30" min="5" max="100">
+        <input type="number" id="candleCount" value="50" min="10" max="150">
     </div>
-    <div class="control-group">
+
+    <div class="cg">
         <label>&nbsp;</label>
-        <button class="btn btn-summary" id="btnSummary" onclick="loadSummary()">📋 Summary</button>
+        <button class="btn btn-green" id="btnSum" onclick="loadSummary()">📋 Summary</button>
     </div>
-    <div class="control-group">
+
+    <div class="cg">
         <label>&nbsp;</label>
-        <button class="btn btn-primary" id="btnAnalysis" onclick="loadFullAnalysis()">🔍 Full Analysis</button>
+        <button class="btn btn-blue" id="btnFull" onclick="loadFull()">🔍 Full Analysis</button>
     </div>
 </div>
 
+<!-- LOADING -->
 <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">Fetching candle data...</div>
+    <div id="loadTxt" style="font-size:14px">Fetching candles...</div>
 </div>
 
-<div class="summary-section" id="summarySection" style="display:none;">
-    <h2>📋 Latest Candle - Summary View</h2>
-    <div class="table-wrapper">
-        <table class="summary-table" id="summaryTable">
+<!-- SUMMARY -->
+<div class="summary-section" id="sumSection" style="display:none">
+    <h2>📋 Latest Candle — Summary</h2>
+    <div class="tw">
+        <table class="sum-table" id="sumTable">
             <thead>
                 <tr>
-                    <th rowspan="2" style="vertical-align:middle;">Instrument</th>
-                    <th colspan="3" class="tf-header">📅 Daily</th>
-                    <th colspan="3" class="tf-header">📅 Weekly</th>
-                    <th colspan="3" class="tf-header">📅 Monthly</th>
+                    <th rowspan="2" style="vertical-align:middle">Instrument</th>
+                    <th colspan="4" class="tfh">📅 Daily</th>
+                    <th colspan="4" class="tfh">📅 Weekly</th>
+                    <th colspan="4" class="tfh">📅 Monthly</th>
                 </tr>
                 <tr>
-                    <th class="tf-cell">Class</th>
-                    <th class="tf-cell">Body %</th>
-                    <th class="tf-cell">Direction</th>
-                    <th class="tf-cell">Class</th>
-                    <th class="tf-cell">Body %</th>
-                    <th class="tf-cell">Direction</th>
-                    <th class="tf-cell">Class</th>
-                    <th class="tf-cell">Body %</th>
-                    <th class="tf-cell">Direction</th>
+                    <th class="tfc">Class</th>
+                    <th class="tfc">Body%</th>
+                    <th class="tfc">Role</th>
+                    <th class="tfc">Dir</th>
+                    <th class="tfc">Class</th>
+                    <th class="tfc">Body%</th>
+                    <th class="tfc">Role</th>
+                    <th class="tfc">Dir</th>
+                    <th class="tfc">Class</th>
+                    <th class="tfc">Body%</th>
+                    <th class="tfc">Role</th>
+                    <th class="tfc">Dir</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -688,238 +622,227 @@
     </div>
 </div>
 
-<div class="detail-section" id="detailSection"></div>
+<!-- DETAIL -->
+<div class="detail-section" id="detSection"></div>
 
 <script>
+/* ── INSTRUMENTS ───────────────────────────────────── */
 const INSTRUMENTS = [
-    { code: 'XAU_USD',    name: 'Gold',         display: 'XAU/USD',  icon: '🥇' },
-    { code: 'US30_USD',   name: 'US30 (Dow)',    display: 'US30',     icon: '📈' },
-    { code: 'NAS100_USD', name: 'Nasdaq 100',    display: 'NAS100',   icon: '💻' },
-    { code: 'EUR_USD',    name: 'Euro/Dollar',   display: 'EUR/USD',  icon: '💶' },
-    { code: 'GBP_USD',    name: 'Pound/Dollar',  display: 'GBP/USD',  icon: '💷' },
-    { code: 'GBP_JPY',    name: 'Pound/Yen',     display: 'GBP/JPY',  icon: '💷' },
-    { code: 'USD_JPY',    name: 'Dollar/Yen',    display: 'USD/JPY',  icon: '💴' },
-    { code: 'AUD_USD',    name: 'Aussie/Dollar', display: 'AUD/USD',  icon: '🦘' }
+    { code:'XAU_USD',    display:'XAU/USD',  name:'Gold',         icon:'🥇' },
+    { code:'US30_USD',   display:'US30',     name:'US30 (Dow)',   icon:'📈' },
+    { code:'NAS100_USD', display:'NAS100',   name:'Nasdaq 100',   icon:'💻' },
+    { code:'EUR_USD',    display:'EUR/USD',  name:'Euro/Dollar',  icon:'💶' },
+    { code:'GBP_USD',    display:'GBP/USD',  name:'Pound/Dollar', icon:'💷' },
+    { code:'GBP_JPY',    display:'GBP/JPY',  name:'Pound/Yen',    icon:'💷' },
+    { code:'USD_JPY',    display:'USD/JPY',  name:'Dollar/Yen',   icon:'💴' },
+    { code:'AUD_USD',    display:'AUD/USD',  name:'Aussie/Dollar',icon:'🦘' }
 ];
 
-const TIMEFRAMES = ['Daily', 'Weekly', 'Monthly'];
-let selectedInstruments = new Set();
+const TFS = ['Daily','Weekly','Monthly'];
+let sel = new Set();
 
-// ─── DROPDOWN ───────────────────────────────────────────
-function initDropdown() {
-    const menu = document.getElementById('dropdownMenu');
+/* ── DROPDOWN ──────────────────────────────────────── */
+function initDD(){
+    const menu = document.getElementById('ddMenu');
     INSTRUMENTS.forEach(inst => {
-        const item = document.createElement('div');
-        item.className = 'dropdown-item';
-        item.dataset.code = inst.code;
-        item.onclick = (e) => { e.stopPropagation(); toggleItem(inst.code); };
-        item.innerHTML = `
-            <div class="item-checkbox"></div>
-            <span class="item-icon">${inst.icon}</span>
-            <span class="item-name">${inst.display}</span>
-            <span class="item-code">${inst.name}</span>
-        `;
-        menu.appendChild(item);
+        const div = document.createElement('div');
+        div.className = 'dd-item';
+        div.dataset.code = inst.code;
+        div.onclick = e => { e.stopPropagation(); toggleInst(inst.code); };
+        div.innerHTML = `
+            <div class="dd-chk"></div>
+            <span class="dd-icon">${inst.icon}</span>
+            <span class="dd-name">${inst.display}</span>
+            <span class="dd-sub">${inst.name}</span>`;
+        menu.appendChild(div);
     });
-    selectAll();
+    selAll();
 }
 
-function toggleDropdown() {
-    document.getElementById('dropdownTrigger').classList.toggle('open');
-    document.getElementById('dropdownMenu').classList.toggle('open');
+function toggleDD(){
+    document.getElementById('ddTrigger').classList.toggle('open');
+    document.getElementById('ddMenu').classList.toggle('open');
 }
 
-document.addEventListener('click', (e) => {
-    if (!document.getElementById('dropdownWrapper').contains(e.target)) {
-        document.getElementById('dropdownTrigger').classList.remove('open');
-        document.getElementById('dropdownMenu').classList.remove('open');
+document.addEventListener('click', e => {
+    if(!document.getElementById('ddWrap').contains(e.target)){
+        document.getElementById('ddTrigger').classList.remove('open');
+        document.getElementById('ddMenu').classList.remove('open');
     }
 });
 
-function toggleItem(code) {
-    if (selectedInstruments.has(code)) selectedInstruments.delete(code);
-    else selectedInstruments.add(code);
-    updateDropdownUI();
+function toggleInst(code){
+    sel.has(code) ? sel.delete(code) : sel.add(code);
+    updateDD();
 }
 
-function selectAll() {
-    INSTRUMENTS.forEach(inst => selectedInstruments.add(inst.code));
-    updateDropdownUI();
-}
+function selAll(){ INSTRUMENTS.forEach(i => sel.add(i.code)); updateDD(); }
+function selNone(){ sel.clear(); updateDD(); }
+function removeChip(code){ sel.delete(code); updateDD(); }
 
-function deselectAll() {
-    selectedInstruments.clear();
-    updateDropdownUI();
-}
+function updateDD(){
+    const txt = document.getElementById('ddText');
+    if(sel.size===0) txt.textContent='Select instruments...';
+    else if(sel.size===INSTRUMENTS.length) txt.textContent=`All (${INSTRUMENTS.length})`;
+    else txt.textContent=`${sel.size} selected`;
 
-function removeChip(code) {
-    selectedInstruments.delete(code);
-    updateDropdownUI();
-}
-
-function updateDropdownUI() {
-    const textEl = document.getElementById('selectedText');
-    if (selectedInstruments.size === 0) textEl.textContent = 'Select instruments...';
-    else if (selectedInstruments.size === INSTRUMENTS.length) textEl.textContent = `All instruments (${INSTRUMENTS.length})`;
-    else textEl.textContent = `${selectedInstruments.size} selected`;
-
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.classList.toggle('selected', selectedInstruments.has(item.dataset.code));
+    document.querySelectorAll('.dd-item').forEach(el=>{
+        el.classList.toggle('sel', sel.has(el.dataset.code));
     });
 
-    const chipsContainer = document.getElementById('selectedChips');
-    chipsContainer.innerHTML = '';
-    INSTRUMENTS.forEach(inst => {
-        if (selectedInstruments.has(inst.code)) {
-            const chip = document.createElement('span');
-            chip.className = 'chip';
-            chip.innerHTML = `${inst.icon} ${inst.display} <span class="chip-remove" onclick="removeChip('${inst.code}')">×</span>`;
-            chipsContainer.appendChild(chip);
-        }
+    const chips = document.getElementById('chips');
+    chips.innerHTML='';
+    INSTRUMENTS.forEach(i=>{
+        if(!sel.has(i.code)) return;
+        const c=document.createElement('span');
+        c.className='chip';
+        c.innerHTML=`${i.icon} ${i.display} <span class="chip-x" onclick="removeChip('${i.code}')">×</span>`;
+        chips.appendChild(c);
     });
 
-    document.getElementById('btnSummary').disabled = selectedInstruments.size === 0;
-    document.getElementById('btnAnalysis').disabled = selectedInstruments.size === 0;
+    const empty = sel.size===0;
+    document.getElementById('btnSum').disabled = empty;
+    document.getElementById('btnFull').disabled = empty;
 }
 
-function getSelectedInstruments() {
-    return INSTRUMENTS.filter(i => selectedInstruments.has(i.code)).map(i => i.code);
+function getSelected(){
+    return INSTRUMENTS.filter(i=>sel.has(i.code)).map(i=>i.code);
 }
 
-function getInstrumentDisplay(code) {
-    const inst = INSTRUMENTS.find(i => i.code === code);
-    return inst ? `${inst.icon} ${inst.display}` : code;
+function instDisplay(code){
+    const i=INSTRUMENTS.find(x=>x.code===code);
+    return i ? `${i.icon} ${i.display}` : code;
 }
 
-// ─── HELPERS ────────────────────────────────────────────
-function showLoading(show, text = 'Fetching candle data...') {
-    document.getElementById('loading').classList.toggle('active', show);
-    document.getElementById('loadingText').textContent = text;
+/* ── LOADING ───────────────────────────────────────── */
+function loading(show, txt='Fetching candles...'){
+    document.getElementById('loading').classList.toggle('active',show);
+    document.getElementById('loadTxt').textContent=txt;
 }
 
-function getBadgeClass(cls, dir) {
-    if (cls === 'Marubozu') return 'badge-marubozu';
-    if (cls === 'ERC' && dir === 'Bullish') return 'badge-erc-bull';
-    if (cls === 'ERC' && dir === 'Bearish') return 'badge-erc-bear';
-    if (cls === 'Failed ERC') return 'badge-failed-erc';
-    if (cls === 'Base') return 'badge-base';
-    return 'badge-na';
+/* ── BADGE HELPERS ─────────────────────────────────── */
+function badgeCls(cls, dir){
+    if(cls==='Marubozu')                          return 'b-mrb';
+    if(cls==='ERC' && dir==='Bullish')            return 'b-erc-bull';
+    if(cls==='ERC' && dir==='Bearish')            return 'b-erc-bear';
+    if(cls==='Failed ERC')                        return 'b-ferc';
+    if(cls==='Base')                              return 'b-base';
+    return 'b-na';
 }
 
-function getRowClass(cls, dir) {
-    if (cls === 'Marubozu') return 'row-marubozu';
-    if (cls === 'ERC' && dir === 'Bullish') return 'row-erc-bull';
-    if (cls === 'ERC' && dir === 'Bearish') return 'row-erc-bear';
-    if (cls === 'Failed ERC') return 'row-failed-erc';
-    if (cls === 'Base') return 'row-base';
+function rowCls(cls, dir){
+    if(cls==='Marubozu')               return 'r-mrb';
+    if(cls==='ERC' && dir==='Bullish') return 'r-erc-bull';
+    if(cls==='ERC' && dir==='Bearish') return 'r-erc-bear';
+    if(cls==='Failed ERC')             return 'r-ferc';
+    if(cls==='Base')                   return 'r-base';
     return '';
 }
 
-function getDirClass(dir) {
-    if (dir === 'Bullish') return 'dir-bull';
-    if (dir === 'Bearish') return 'dir-bear';
-    return 'dir-neutral';
+function roleBadge(role){
+    if(!role || role==='N/A') return '';
+    const cls = role.includes('Leg') ? 'role-impulse' : 'role-base';
+    const lbl = role.includes('Leg') ? '⚡ Impulse' : '🟢 Base';
+    return `<span class="role-badge ${cls}">${lbl}</span>`;
 }
 
-function getDirIcon(dir) {
-    if (dir === 'Bullish') return '▲';
-    if (dir === 'Bearish') return '▼';
-    return '—';
-}
+function dirCls(d){ return d==='Bullish'?'dir-bull':d==='Bearish'?'dir-bear':'dir-neu'; }
+function dirIcon(d){ return d==='Bullish'?'▲':d==='Bearish'?'▼':'—'; }
 
-// ─── SUMMARY ────────────────────────────────────────────
-async function loadSummary() {
-    const instruments = getSelectedInstruments();
-    if (!instruments.length) return;
-    showLoading(true, 'Loading summary...');
-    try {
-        const resp = await fetch('/api/summary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ instruments })
+/* ── SUMMARY ───────────────────────────────────────── */
+async function loadSummary(){
+    const inst = getSelected();
+    if(!inst.length) return;
+    loading(true,'Loading summary...');
+    try{
+        const r = await fetch('/api/summary',{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({instruments:inst})
         });
-        if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-        renderSummary(await resp.json());
-    } catch (e) { alert('Error: ' + e.message); }
-    showLoading(false);
+        if(!r.ok) throw new Error(r.status);
+        renderSummary(await r.json());
+    }catch(e){ alert('Error: '+e.message); }
+    loading(false);
 }
 
-function renderSummary(data) {
-    const tbody = document.querySelector('#summaryTable tbody');
-    tbody.innerHTML = '';
-    data.forEach(row => {
-        const tr = document.createElement('tr');
-        let cells = `<td><strong>${getInstrumentDisplay(row.instrument)}</strong></td>`;
-        TIMEFRAMES.forEach(tf => {
-            const d = row[tf];
-            const badge = getBadgeClass(d.classification, d.direction);
-            const dirCls = getDirClass(d.direction);
-            const icon = getDirIcon(d.direction);
-            const label = d.is_marubozu ? 'MARUBOZU' : d.classification;
-            cells += `
-                <td class="tf-cell"><span class="badge ${badge}">${label}</span></td>
-                <td class="tf-cell">${d.body_pct}%</td>
-                <td class="tf-cell ${dirCls}">${icon} ${d.direction}</td>`;
+function renderSummary(data){
+    const tbody = document.querySelector('#sumTable tbody');
+    tbody.innerHTML='';
+    data.forEach(row=>{
+        const tr=document.createElement('tr');
+        let html=`<td><strong>${instDisplay(row.instrument)}</strong></td>`;
+        TFS.forEach(tf=>{
+            const d=row[tf];
+            const bc=badgeCls(d.classification, d.direction);
+            const dc=dirCls(d.direction);
+            const di=dirIcon(d.direction);
+            const lbl=d.is_marubozu?'MARUBOZU':d.classification;
+            html+=`
+                <td class="tfc"><span class="badge ${bc}">${lbl}</span></td>
+                <td class="tfc">${d.body_pct}%</td>
+                <td class="tfc">${roleBadge(d.structural_role)}</td>
+                <td class="tfc ${dc}">${di} ${d.direction}</td>`;
         });
-        tr.innerHTML = cells;
+        tr.innerHTML=html;
         tbody.appendChild(tr);
     });
-    document.getElementById('summarySection').style.display = 'block';
-    document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sumSection').style.display='block';
+    document.getElementById('sumSection').scrollIntoView({behavior:'smooth'});
 }
 
-// ─── FULL ANALYSIS ──────────────────────────────────────
-async function loadFullAnalysis() {
-    const instruments = getSelectedInstruments();
-    if (!instruments.length) return;
-    const count = parseInt(document.getElementById('candleCount').value) || 30;
-    showLoading(true, `Analyzing ${instruments.length} instruments...`);
-    try {
-        const resp = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ instruments, candle_count: count })
+/* ── FULL ANALYSIS ─────────────────────────────────── */
+async function loadFull(){
+    const inst=getSelected();
+    if(!inst.length) return;
+    const cnt=parseInt(document.getElementById('candleCount').value)||50;
+    loading(true,`Analyzing ${inst.length} instruments...`);
+    try{
+        const r=await fetch('/api/analyze',{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({instruments:inst, candle_count:cnt})
         });
-        if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-        renderDetail(await resp.json());
-    } catch (e) { alert('Error: ' + e.message); }
-    showLoading(false);
+        if(!r.ok) throw new Error(r.status);
+        renderDetail(await r.json());
+    }catch(e){ alert('Error: '+e.message); }
+    loading(false);
 }
 
-function renderDetail(data) {
-    const container = document.getElementById('detailSection');
-    container.innerHTML = '<h2>🔍 Full Candle Analysis</h2>';
-    const orderedKeys = getSelectedInstruments().filter(k => data[k]);
+function renderDetail(data){
+    const cont=document.getElementById('detSection');
+    cont.innerHTML='<h2>🔍 Full Candle Analysis</h2>';
+    const keys=getSelected().filter(k=>data[k]);
 
-    orderedKeys.forEach((instrument, idx) => {
-        const block = document.createElement('div');
-        block.className = 'instrument-block';
+    keys.forEach((inst, idx)=>{
+        const block=document.createElement('div');
+        block.className='inst-block';
 
-        const tabsHtml = TIMEFRAMES.map((tf, ti) =>
-            `<div class="tf-tab ${ti===0?'active':''}" onclick="switchTab(this,'${tf}','g${idx}')" data-tf="${tf}">${tf}</div>`
+        const tabs=TFS.map((tf,ti)=>
+            `<div class="tf-tab ${ti===0?'active':''}"
+                  onclick="switchTab(this,'${tf}','g${idx}')"
+                  data-tf="${tf}">${tf}</div>`
         ).join('');
 
-        const contentsHtml = TIMEFRAMES.map((tf, ti) => {
-            const candles = data[instrument][tf] || [];
-            const chartId = `c${idx}_${ti}`;
-            const counts = { ERC: 0, 'Failed ERC': 0, Base: 0, Marubozu: 0 };
-            candles.forEach(c => { if (counts[c.classification] !== undefined) counts[c.classification]++; });
-            const total = candles.length || 1;
+        const contents=TFS.map((tf,ti)=>{
+            const candles=data[inst][tf]||[];
+            const cid=`ch${idx}_${ti}`;
+            const cnts={ERC:0,'Failed ERC':0,Base:0,Marubozu:0};
+            candles.forEach(c=>{
+                if(cnts[c.classification]!==undefined) cnts[c.classification]++;
+            });
+            const tot=candles.length||1;
+            const ep=((cnts.ERC/tot)*100).toFixed(1);
+            const fp=((cnts['Failed ERC']/tot)*100).toFixed(1);
+            const bp=((cnts.Base/tot)*100).toFixed(1);
+            const mp=((cnts.Marubozu/tot)*100).toFixed(1);
 
-            const ercPct = ((counts.ERC/total)*100).toFixed(1);
-            const failedPct = (((counts['Failed ERC'])/total)*100).toFixed(1);
-            const basePct = ((counts.Base/total)*100).toFixed(1);
-            const marPct = ((counts.Marubozu/total)*100).toFixed(1);
-
-            const rows = candles.slice().reverse().map(c => {
-                const badge = getBadgeClass(c.classification, c.direction);
-                const dirCls = getDirClass(c.direction);
-                const dirIcon = getDirIcon(c.direction);
-                const rowCls = getRowClass(c.classification, c.direction);
-                const label = c.is_marubozu ? 'MARUBOZU' : c.classification;
-                const baseMarker = c.classification === 'Base' ? '🟢' : '';
-                const maruMarker = c.is_marubozu ? '🔴' : '';
-                return `<tr class="${rowCls}">
+            const rows=candles.slice().reverse().map(c=>{
+                const bc=badgeCls(c.classification,c.direction);
+                const rc=rowCls(c.classification,c.direction);
+                const dc=dirCls(c.direction);
+                const di=dirIcon(c.direction);
+                const lbl=c.is_marubozu?'MARUBOZU':c.classification;
+                const explosive=c.is_explosive?'<span style="color:#ff9800;font-size:10px">⚡</span>':'';
+                return `<tr class="${rc}">
                     <td>${c.time}</td>
                     <td>${c.open}</td>
                     <td style="color:#4caf50">${c.high}</td>
@@ -927,52 +850,55 @@ function renderDetail(data) {
                     <td><strong>${c.close}</strong></td>
                     <td>${c.body_pct}%</td>
                     <td>${c.close_position_pct}%</td>
-                    <td><span class="badge ${badge}">${label}</span> ${baseMarker}${maruMarker}</td>
-                    <td class="${dirCls}">${dirIcon} ${c.direction}</td>
+                    <td>${c.range_vs_avg}×${explosive}</td>
+                    <td><span class="badge ${bc}">${lbl}</span></td>
+                    <td>${roleBadge(c.structural_role)}</td>
+                    <td class="${dc}">${di} ${c.direction}</td>
                 </tr>`;
-            }).join('') || '<tr><td colspan="9" class="empty-state">No data</td></tr>';
+            }).join('')||`<tr><td colspan="11" class="empty">No data</td></tr>`;
 
             return `
             <div class="tf-content ${ti===0?'active':''}" data-tf="${tf}" data-group="g${idx}">
-                <div class="stats-bar">
+                <div class="stats-row">
                     <div class="stat-card">
-                        <div class="stat-label">ERC</div>
-                        <div class="stat-value" style="color:var(--erc-bull)">${counts.ERC}</div>
-                        <div class="stat-sub">${ercPct}%</div>
+                        <div class="sl">ERC</div>
+                        <div class="sv" style="color:var(--erc-bull)">${cnts.ERC}</div>
+                        <div class="ss">${ep}% • Impulse</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Failed ERC</div>
-                        <div class="stat-value" style="color:var(--failed-erc)">${counts['Failed ERC']}</div>
-                        <div class="stat-sub">${failedPct}%</div>
+                        <div class="sl">Failed ERC</div>
+                        <div class="sv" style="color:var(--failed-erc)">${cnts['Failed ERC']}</div>
+                        <div class="ss">${fp}% • Impulse</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Base 🟢</div>
-                        <div class="stat-value" style="color:var(--base-color)">${counts.Base}</div>
-                        <div class="stat-sub">${basePct}%</div>
+                        <div class="sl">Base / NRC</div>
+                        <div class="sv" style="color:var(--base-color)">${cnts.Base}</div>
+                        <div class="ss">${bp}% • Base Zone</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Marubozu 🔴</div>
-                        <div class="stat-value" style="color:var(--marubozu)">${counts.Marubozu}</div>
-                        <div class="stat-sub">${marPct}%</div>
+                        <div class="sl">Marubozu</div>
+                        <div class="sv" style="color:var(--marubozu)">${cnts.Marubozu}</div>
+                        <div class="ss">${mp}% • Strongest</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Total</div>
-                        <div class="stat-value">${candles.length}</div>
-                        <div class="stat-sub">candles</div>
+                        <div class="sl">Total</div>
+                        <div class="sv">${candles.length}</div>
+                        <div class="ss">candles</div>
                     </div>
                 </div>
                 <div class="pct-bar">
-                    <div class="pct-bar-segment" style="width:${ercPct}%;background:var(--erc-bull)"></div>
-                    <div class="pct-bar-segment" style="width:${failedPct}%;background:var(--failed-erc)"></div>
-                    <div class="pct-bar-segment" style="width:${basePct}%;background:var(--base-color)"></div>
-                    <div class="pct-bar-segment" style="width:${marPct}%;background:var(--marubozu)"></div>
+                    <div class="pct-seg" style="width:${ep}%;background:var(--erc-bull)"></div>
+                    <div class="pct-seg" style="width:${fp}%;background:var(--failed-erc)"></div>
+                    <div class="pct-seg" style="width:${bp}%;background:var(--base-color)"></div>
+                    <div class="pct-seg" style="width:${mp}%;background:var(--marubozu)"></div>
                 </div>
-                <div class="chart-container" id="${chartId}"></div>
-                <div class="table-scroll">
-                    <table class="detail-table">
+                <div class="chart-box" id="${cid}"></div>
+                <div class="tbl-scroll">
+                    <table class="det-table">
                         <thead><tr>
                             <th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th>
-                            <th>Body%</th><th>Close Pos%</th><th>Classification</th><th>Direction</th>
+                            <th>Body%</th><th>ClosePos%</th><th>RangeVsAvg</th>
+                            <th>Classification</th><th>Role</th><th>Direction</th>
                         </tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
@@ -980,143 +906,110 @@ function renderDetail(data) {
             </div>`;
         }).join('');
 
-        block.innerHTML = `
-            <div class="instrument-header">${getInstrumentDisplay(instrument)}</div>
-            <div class="timeframe-tabs" data-group="g${idx}">${tabsHtml}</div>
-            ${contentsHtml}`;
-        container.appendChild(block);
+        block.innerHTML=`
+            <div class="inst-header">${instDisplay(inst)}</div>
+            <div class="tf-tabs" data-group="g${idx}">${tabs}</div>
+            ${contents}`;
+        cont.appendChild(block);
 
-        setTimeout(() => {
-            TIMEFRAMES.forEach((tf, ti) => {
-                renderChart(`c${idx}_${ti}`, data[instrument][tf] || []);
+        setTimeout(()=>{
+            TFS.forEach((tf,ti)=>{
+                renderChart(`ch${idx}_${ti}`, data[inst][tf]||[]);
             });
-        }, 150);
+        },150);
     });
 
-    container.scrollIntoView({ behavior: 'smooth' });
+    cont.scrollIntoView({behavior:'smooth'});
 }
 
-function switchTab(el, tf, group) {
-    const block = el.closest('.instrument-block');
-    block.querySelectorAll(`.timeframe-tabs[data-group="${group}"] .tf-tab`).forEach(t => t.classList.remove('active'));
+function switchTab(el,tf,grp){
+    const blk=el.closest('.inst-block');
+    blk.querySelectorAll(`.tf-tabs[data-group="${grp}"] .tf-tab`).forEach(t=>t.classList.remove('active'));
     el.classList.add('active');
-    block.querySelectorAll(`.tf-content[data-group="${group}"]`).forEach(c => {
-        c.classList.toggle('active', c.dataset.tf === tf);
+    blk.querySelectorAll(`.tf-content[data-group="${grp}"]`).forEach(c=>{
+        c.classList.toggle('active', c.dataset.tf===tf);
     });
 }
 
-// ─── CHART ──────────────────────────────────────────────
-function renderChart(containerId, candles) {
-    const container = document.getElementById(containerId);
-    if (!container || !candles.length) {
-        if (container) container.innerHTML = '<div class="empty-state">No data</div>';
-        return;
-    }
-    container.innerHTML = '';
+/* ── CHART ─────────────────────────────────────────── */
+function renderChart(id, candles){
+    const box=document.getElementById(id);
+    if(!box||!candles.length){ if(box) box.innerHTML=`<div class="empty">No data</div>`; return; }
+    box.innerHTML='';
 
-    const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: 360,
-        layout: { background: { color: '#0a0e17' }, textColor: '#787b86' },
-        grid: { vertLines: { color: '#1c2030' }, horzLines: { color: '#1c2030' } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        rightPriceScale: { borderColor: '#2a2e39' },
-        timeScale: { borderColor: '#2a2e39', timeVisible: true },
+    const chart=LightweightCharts.createChart(box,{
+        width:box.clientWidth, height:360,
+        layout:{background:{color:'#0a0e17'},textColor:'#787b86'},
+        grid:{vertLines:{color:'#1c2030'},horzLines:{color:'#1c2030'}},
+        crosshair:{mode:LightweightCharts.CrosshairMode.Normal},
+        rightPriceScale:{borderColor:'#2a2e39'},
+        timeScale:{borderColor:'#2a2e39',timeVisible:true},
     });
 
-    container._chart = chart;
+    box._chart=chart;
 
-    // Default candle colors
-    const candleSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
+    const cs=chart.addCandlestickSeries({
+        upColor:'#26a69a', downColor:'#ef5350',
+        borderUpColor:'#26a69a', borderDownColor:'#ef5350',
+        wickUpColor:'#26a69a', wickDownColor:'#ef5350',
     });
 
-    // Color each candle based on classification
-    const chartData = candles.map(c => {
-        let color;
-        if (c.is_marubozu || c.classification === 'Marubozu') {
-            // Marubozu: keep normal colors but will mark with circle
-            color = c.direction === 'Bullish' ? '#e91e63' : '#e91e63';
-        } else if (c.classification === 'ERC') {
-            // ERC Bullish = Blue, ERC Bearish = Red
-            color = c.direction === 'Bullish' ? '#2196F3' : '#f44336';
-        } else if (c.classification === 'Failed ERC') {
-            // Failed ERC = Orange
-            color = '#ff9800';
+    // Color each candle by classification
+    const chartData=candles.map(c=>{
+        let col;
+        if(c.classification==='Marubozu'){
+            col=c.direction==='Bullish'?'#e91e63':'#c2185b';
+        } else if(c.classification==='ERC'){
+            // Blue = Bullish ERC, Red = Bearish ERC
+            col=c.direction==='Bullish'?'#2196F3':'#f44336';
+        } else if(c.classification==='Failed ERC'){
+            // Orange = Failed ERC (both directions)
+            col='#ff9800';
         } else {
-            // Base = subdued/gray
-            color = '#555555';
+            // Base = green circled area (use muted color for body)
+            col='#37474f';
         }
-
-        return {
-            time: c.time,
-            open: c.open,
-            high: c.high,
-            low: c.low,
-            close: c.close,
-            color: color,
-            borderColor: color,
-            wickColor: color
-        };
+        return { time:c.time, open:c.open, high:c.high, low:c.low, close:c.close,
+                 color:col, borderColor:col, wickColor:col };
     });
 
-    candleSeries.setData(chartData);
+    cs.setData(chartData);
 
     // Markers
-    const markers = candles.map(c => {
-        let color, shape, position, text;
+    const markers=candles.map(c=>{
+        let color,shape,position,text;
 
-        if (c.is_marubozu || c.classification === 'Marubozu') {
-            // Red circle for Marubozu
-            color = '#e91e63';
-            shape = 'circle';
-            position = c.direction === 'Bullish' ? 'belowBar' : 'aboveBar';
-            text = '⭕ MRB';
-        } else if (c.classification === 'ERC') {
-            // Blue arrow up for bullish ERC, Red arrow down for bearish ERC
-            if (c.direction === 'Bullish') {
-                color = '#2196F3';
-                shape = 'arrowUp';
-                position = 'belowBar';
-                text = 'ERC';
+        if(c.classification==='Marubozu'){
+            color='#e91e63';
+            shape='circle';
+            position=c.direction==='Bullish'?'belowBar':'aboveBar';
+            text='MRB';
+        } else if(c.classification==='ERC'){
+            if(c.direction==='Bullish'){
+                color='#2196F3'; shape='arrowUp'; position='belowBar'; text='ERC';
             } else {
-                color = '#f44336';
-                shape = 'arrowDown';
-                position = 'aboveBar';
-                text = 'ERC';
+                color='#f44336'; shape='arrowDown'; position='aboveBar'; text='ERC';
             }
-        } else if (c.classification === 'Failed ERC') {
-            // Orange square for Failed ERC
-            color = '#ff9800';
-            shape = 'square';
-            position = 'aboveBar';
-            text = 'FERC';
+        } else if(c.classification==='Failed ERC'){
+            color='#ff9800'; shape='square';
+            position=c.direction==='Bullish'?'belowBar':'aboveBar';
+            text='FERC';
         } else {
-            // Green dot for Base candles
-            color = '#4caf50';
-            shape = 'circle';
-            position = 'aboveBar';
-            text = '●';
+            // Base — green dot ON the candle body
+            color='#4caf50'; shape='circle'; position='inBar'; text='';
         }
 
-        return { time: c.time, position, color, shape, text, size: 0.6 };
+        return {time:c.time, position, color, shape, text, size:0.6};
     });
 
-    candleSeries.setMarkers(markers);
+    cs.setMarkers(markers);
     chart.timeScale().fitContent();
 
-    new ResizeObserver(() => {
-        chart.applyOptions({ width: container.clientWidth });
-    }).observe(container);
+    new ResizeObserver(()=>chart.applyOptions({width:box.clientWidth})).observe(box);
 }
 
-// ─── INIT ───────────────────────────────────────────────
-initDropdown();
+/* ── INIT ───────────────────────────────────────────── */
+initDD();
 </script>
 </body>
 </html>
