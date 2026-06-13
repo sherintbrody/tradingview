@@ -3,9 +3,7 @@ from oanda_client import fetch_candles
 from classifier import process_candles
 import os
 
-app = Flask(__name__,
-            static_folder='static',
-            static_url_path='/static')
+app = Flask(__name__)
 
 DEFAULT_INSTRUMENTS = [
     "XAU_USD",
@@ -33,33 +31,40 @@ def health():
     return {"status": "ok"}, 200
 
 
-# ── Favicon routes ─────────────────────────────────────────
-@app.route('/favicon.ico')
-def favicon_ico():
+@app.route("/favicon.ico")
+def favicon():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'favicon.ico',
-        mimetype='image/vnd.microsoft.icon'
+        app.root_path,
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon"
     )
 
 
-@app.route('/favicon.svg')
-def favicon_svg():
+@app.route("/favicon-16x16.png")
+def favicon16():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'favicon.svg',
-        mimetype='image/svg+xml'
+        app.root_path,
+        "favicon-16x16.png",
+        mimetype="image/png"
     )
 
 
-@app.route('/apple-touch-icon.png')
-def apple_touch_icon():
+@app.route("/favicon-32x32.png")
+def favicon32():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'apple-touch-icon.png',
-        mimetype='image/png'
+        app.root_path,
+        "favicon-32x32.png",
+        mimetype="image/png"
     )
-# ───────────────────────────────────────────────────────────
+
+
+@app.route("/apple-touch-icon.png")
+def apple_touch():
+    return send_from_directory(
+        app.root_path,
+        "apple-touch-icon.png",
+        mimetype="image/png"
+    )
 
 
 @app.route("/api/analyze", methods=["POST"])
@@ -80,7 +85,7 @@ def analyze():
                 else classified
             )
 
-    return results
+    return jsonify(results)
 
 
 @app.route("/api/summary", methods=["POST"])
@@ -97,15 +102,15 @@ def summary():
             if classified:
                 latest = classified[-1]
                 row[tf] = {
-                    "classification":    latest["classification"],
-                    "structural_role":   latest["structural_role"],
-                    "body_pct":          latest["body_pct"],
-                    "close_position_pct":latest["close_position_pct"],
-                    "range_vs_avg":      latest["range_vs_avg"],
-                    "direction":         latest["direction"],
-                    "close":             latest["close"],
-                    "is_marubozu":       latest["is_marubozu"],
-                    "is_explosive":      latest["is_explosive"]
+                    "classification":     latest["classification"],
+                    "structural_role":    latest["structural_role"],
+                    "body_pct":           latest["body_pct"],
+                    "close_position_pct": latest["close_position_pct"],
+                    "range_vs_avg":       latest["range_vs_avg"],
+                    "direction":          latest["direction"],
+                    "close":              latest["close"],
+                    "is_marubozu":        latest["is_marubozu"],
+                    "is_explosive":       latest["is_explosive"]
                 }
             else:
                 row[tf] = {
@@ -116,7 +121,7 @@ def summary():
                 }
         summary_data.append(row)
 
-    return summary_data
+    return jsonify(summary_data)
 
 
 if __name__ == "__main__":
