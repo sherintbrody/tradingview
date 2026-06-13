@@ -7,10 +7,11 @@
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
-            --erc-bull: #00c853;
-            --erc-bear: #ff1744;
-            --base-color: #ffa726;
-            --indecisive-color: #42a5f5;
+            --erc-bull: #2196F3;
+            --erc-bear: #f44336;
+            --failed-erc: #ff9800;
+            --base-color: #4caf50;
+            --marubozu: #e91e63;
             --bg-dark: #0a0e17;
             --bg-card: #131722;
             --bg-card-alt: #1c2030;
@@ -28,7 +29,6 @@
             min-height: 100vh;
         }
 
-        /* HEADER */
         .header {
             background: linear-gradient(135deg, #131722 0%, #1c2030 100%);
             padding: 20px 30px;
@@ -42,7 +42,7 @@
 
         .header h1 {
             font-size: 24px;
-            background: linear-gradient(90deg, #42a5f5, #00c853);
+            background: linear-gradient(90deg, #2196F3, #4caf50);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -55,7 +55,7 @@
 
         .legend {
             display: flex;
-            gap: 20px;
+            gap: 16px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -64,13 +64,29 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .legend-dot {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 3px;
+        }
+
+        .legend-dot-circle {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--base-color);
+            background: transparent;
+        }
+
+        .legend-dot-ring {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--marubozu);
+            background: transparent;
         }
 
         /* CONTROLS */
@@ -97,7 +113,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* DROPDOWN MULTI SELECT */
         .dropdown-wrapper {
             position: relative;
             width: 320px;
@@ -119,14 +134,8 @@
             transition: border-color 0.2s;
         }
 
-        .dropdown-trigger:hover {
-            border-color: #42a5f5;
-        }
-
-        .dropdown-trigger.open {
-            border-color: #42a5f5;
-            border-radius: 6px 6px 0 0;
-        }
+        .dropdown-trigger:hover { border-color: #2196F3; }
+        .dropdown-trigger.open { border-color: #2196F3; border-radius: 6px 6px 0 0; }
 
         .dropdown-arrow {
             transition: transform 0.2s;
@@ -134,9 +143,7 @@
             color: var(--text-secondary);
         }
 
-        .dropdown-trigger.open .dropdown-arrow {
-            transform: rotate(180deg);
-        }
+        .dropdown-trigger.open .dropdown-arrow { transform: rotate(180deg); }
 
         .selected-text {
             flex: 1;
@@ -149,10 +156,9 @@
             display: none;
             position: absolute;
             top: 100%;
-            left: 0;
-            right: 0;
+            left: 0; right: 0;
             background: var(--bg-card-alt);
-            border: 1px solid #42a5f5;
+            border: 1px solid #2196F3;
             border-top: none;
             border-radius: 0 0 6px 6px;
             z-index: 100;
@@ -160,13 +166,7 @@
             overflow-y: auto;
         }
 
-        .dropdown-menu.open {
-            display: block;
-        }
-
-        .dropdown-menu::-webkit-scrollbar { width: 5px; }
-        .dropdown-menu::-webkit-scrollbar-track { background: var(--bg-card-alt); }
-        .dropdown-menu::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        .dropdown-menu.open { display: block; }
 
         .dropdown-item {
             padding: 10px 14px;
@@ -180,57 +180,39 @@
         }
 
         .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: rgba(66,165,245,0.1); }
-
-        .dropdown-item.selected {
-            background: rgba(66,165,245,0.08);
-        }
+        .dropdown-item:hover { background: rgba(33,150,243,0.1); }
+        .dropdown-item.selected { background: rgba(33,150,243,0.08); }
 
         .item-checkbox {
-            width: 18px;
-            height: 18px;
+            width: 18px; height: 18px;
             border: 2px solid var(--border-color);
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            transition: all 0.15s;
         }
 
         .dropdown-item.selected .item-checkbox {
-            background: #42a5f5;
-            border-color: #42a5f5;
+            background: #2196F3;
+            border-color: #2196F3;
         }
 
         .item-checkbox::after {
             content: '';
             display: none;
-            width: 5px;
-            height: 9px;
+            width: 5px; height: 9px;
             border: solid white;
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
             margin-bottom: 2px;
         }
 
-        .dropdown-item.selected .item-checkbox::after {
-            display: block;
-        }
+        .dropdown-item.selected .item-checkbox::after { display: block; }
 
-        .item-icon {
-            font-size: 16px;
-        }
-
-        .item-name {
-            font-weight: 600;
-        }
-
-        .item-code {
-            color: var(--text-secondary);
-            font-size: 11px;
-            margin-left: auto;
-        }
+        .item-icon { font-size: 16px; }
+        .item-name { font-weight: 600; }
+        .item-code { color: var(--text-secondary); font-size: 11px; margin-left: auto; }
 
         .dropdown-actions {
             display: flex;
@@ -242,23 +224,15 @@
             padding: 8px;
             text-align: center;
             font-size: 11px;
-            color: #42a5f5;
+            color: #2196F3;
             cursor: pointer;
-            transition: background 0.15s;
             text-transform: uppercase;
             font-weight: 600;
-            letter-spacing: 0.5px;
         }
 
-        .dropdown-action-btn:hover {
-            background: rgba(66,165,245,0.1);
-        }
+        .dropdown-action-btn:hover { background: rgba(33,150,243,0.1); }
+        .dropdown-action-btn:first-child { border-right: 1px solid var(--border-color); }
 
-        .dropdown-action-btn:first-child {
-            border-right: 1px solid var(--border-color);
-        }
-
-        /* SELECTED CHIPS */
         .selected-chips {
             display: flex;
             flex-wrap: wrap;
@@ -271,11 +245,11 @@
             align-items: center;
             gap: 5px;
             padding: 4px 10px;
-            background: rgba(66,165,245,0.12);
-            border: 1px solid rgba(66,165,245,0.3);
+            background: rgba(33,150,243,0.12);
+            border: 1px solid rgba(33,150,243,0.3);
             border-radius: 20px;
             font-size: 12px;
-            color: #42a5f5;
+            color: #2196F3;
             font-weight: 600;
         }
 
@@ -283,15 +257,11 @@
             cursor: pointer;
             font-size: 14px;
             color: var(--text-secondary);
-            transition: color 0.15s;
             line-height: 1;
         }
 
-        .chip-remove:hover {
-            color: var(--erc-bear);
-        }
+        .chip-remove:hover { color: var(--erc-bear); }
 
-        /* NUMBER INPUT */
         .controls input[type="number"] {
             background: var(--bg-card-alt);
             border: 1px solid var(--border-color);
@@ -303,12 +273,8 @@
             height: 40px;
         }
 
-        .controls input[type="number"]:focus {
-            border-color: #42a5f5;
-            outline: none;
-        }
+        .controls input[type="number"]:focus { border-color: #2196F3; outline: none; }
 
-        /* BUTTONS */
         .btn {
             padding: 9px 24px;
             border: none;
@@ -324,30 +290,20 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(66,165,245,0.3);
-        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(33,150,243,0.3); }
 
         .btn-summary {
-            background: linear-gradient(135deg, #00c853, #00a844);
+            background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
         }
 
-        .btn-summary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(0,200,83,0.3);
-        }
+        .btn-summary:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(76,175,80,0.3); }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
         /* LOADING */
         .loading-overlay {
@@ -365,10 +321,9 @@
         .loading-overlay.active { display: flex; }
 
         .spinner {
-            width: 55px;
-            height: 55px;
+            width: 55px; height: 55px;
             border: 4px solid var(--border-color);
-            border-top: 4px solid #42a5f5;
+            border-top: 4px solid #2196F3;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -378,14 +333,8 @@
         .loading-text { font-size: 15px; }
 
         /* SUMMARY TABLE */
-        .summary-section {
-            padding: 25px 30px;
-        }
-
-        .summary-section h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
+        .summary-section { padding: 25px 30px; }
+        .summary-section h2 { font-size: 18px; margin-bottom: 15px; }
 
         .table-wrapper {
             overflow-x: auto;
@@ -397,12 +346,12 @@
             width: 100%;
             border-collapse: collapse;
             background: var(--bg-card);
-            min-width: 900px;
+            min-width: 1000px;
         }
 
         .summary-table th {
             background: var(--bg-card-alt);
-            padding: 12px 16px;
+            padding: 12px 14px;
             text-align: left;
             font-size: 11px;
             text-transform: uppercase;
@@ -412,7 +361,7 @@
         }
 
         .summary-table td {
-            padding: 11px 16px;
+            padding: 11px 14px;
             border-bottom: 1px solid var(--border-color);
             font-size: 13px;
         }
@@ -422,7 +371,7 @@
 
         .tf-header {
             background: linear-gradient(135deg, #1c2030, #252a3a) !important;
-            color: #42a5f5 !important;
+            color: #2196F3 !important;
             text-align: center !important;
             border-left: 2px solid var(--border-color);
         }
@@ -441,30 +390,37 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .badge-erc-bull {
-            background: rgba(0,200,83,0.15);
+            background: rgba(33,150,243,0.15);
             color: var(--erc-bull);
-            border: 1px solid rgba(0,200,83,0.3);
+            border: 1px solid rgba(33,150,243,0.3);
         }
 
         .badge-erc-bear {
-            background: rgba(255,23,68,0.15);
+            background: rgba(244,67,54,0.15);
             color: var(--erc-bear);
-            border: 1px solid rgba(255,23,68,0.3);
+            border: 1px solid rgba(244,67,54,0.3);
+        }
+
+        .badge-failed-erc {
+            background: rgba(255,152,0,0.15);
+            color: var(--failed-erc);
+            border: 1px solid rgba(255,152,0,0.3);
         }
 
         .badge-base {
-            background: rgba(255,167,38,0.15);
+            background: rgba(76,175,80,0.15);
             color: var(--base-color);
-            border: 1px solid rgba(255,167,38,0.3);
+            border: 1px solid rgba(76,175,80,0.3);
         }
 
-        .badge-indecisive {
-            background: rgba(66,165,245,0.15);
-            color: var(--indecisive-color);
-            border: 1px solid rgba(66,165,245,0.3);
+        .badge-marubozu {
+            background: rgba(233,30,99,0.15);
+            color: var(--marubozu);
+            border: 1px solid rgba(233,30,99,0.3);
         }
 
         .badge-na {
@@ -500,9 +456,6 @@
             font-size: 16px;
             font-weight: 700;
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .timeframe-tabs {
@@ -524,8 +477,8 @@
         .tf-tab:hover { color: var(--text-primary); background: var(--bg-card-alt); }
 
         .tf-tab.active {
-            color: #42a5f5;
-            border-bottom-color: #42a5f5;
+            color: #2196F3;
+            border-bottom-color: #2196F3;
             background: var(--bg-card-alt);
         }
 
@@ -534,37 +487,29 @@
 
         .stats-bar {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
 
         .stat-card {
             flex: 1;
-            min-width: 110px;
-            padding: 12px 16px;
+            min-width: 100px;
+            padding: 12px 14px;
             background: var(--bg-card-alt);
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-secondary);
             text-transform: uppercase;
             margin-bottom: 5px;
         }
 
-        .stat-value {
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .stat-sub {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
+        .stat-value { font-size: 20px; font-weight: 700; }
+        .stat-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
         .pct-bar {
             width: 100%;
@@ -576,10 +521,7 @@
             margin-bottom: 18px;
         }
 
-        .pct-bar-segment {
-            height: 100%;
-            transition: width 0.5s ease;
-        }
+        .pct-bar-segment { height: 100%; transition: width 0.5s ease; }
 
         .chart-container {
             width: 100%;
@@ -609,7 +551,7 @@
 
         .detail-table th {
             background: var(--bg-card-alt);
-            padding: 9px 14px;
+            padding: 9px 12px;
             text-align: left;
             color: var(--text-secondary);
             font-size: 11px;
@@ -621,7 +563,7 @@
         }
 
         .detail-table td {
-            padding: 7px 14px;
+            padding: 7px 12px;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -635,43 +577,53 @@
             font-size: 14px;
         }
 
+        /* Row highlighting based on classification */
+        .row-erc-bull { border-left: 3px solid var(--erc-bull); }
+        .row-erc-bear { border-left: 3px solid var(--erc-bear); }
+        .row-failed-erc { border-left: 3px solid var(--failed-erc); }
+        .row-base { border-left: 3px solid var(--base-color); }
+        .row-marubozu { border-left: 3px solid var(--marubozu); }
+
         @media (max-width: 768px) {
             .header { flex-direction: column; }
             .controls { flex-direction: column; align-items: stretch; }
             .dropdown-wrapper { width: 100%; }
             .detail-section, .summary-section { padding: 15px; }
+            .legend { gap: 10px; }
         }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
     <div>
         <h1>📊 Candle Classification Dashboard</h1>
-        <div class="header-sub">OANDA Multi-Timeframe Candle Analyzer</div>
+        <div class="header-sub">ERC • Failed ERC • Base • Marubozu Analyzer</div>
     </div>
     <div class="legend">
         <div class="legend-item">
             <div class="legend-dot" style="background:var(--erc-bull)"></div>
-            <span>ERC Bullish (&gt;50%)</span>
+            <span>ERC Bullish (≥80%)</span>
         </div>
         <div class="legend-item">
             <div class="legend-dot" style="background:var(--erc-bear)"></div>
-            <span>ERC Bearish (&gt;50%)</span>
+            <span>ERC Bearish (≥80%)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:var(--base-color)"></div>
+            <div class="legend-dot" style="background:var(--failed-erc)"></div>
+            <span>Failed ERC (50-80%)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot-circle"></div>
             <span>Base (&lt;50%)</span>
         </div>
         <div class="legend-item">
-            <div class="legend-dot" style="background:var(--indecisive-color)"></div>
-            <span>Indecisive (≈50%)</span>
+            <div class="legend-dot-ring"></div>
+            <span>Marubozu (≥95%)</span>
         </div>
     </div>
 </div>
 
-<!-- CONTROLS -->
 <div class="controls">
     <div class="control-group">
         <label>Select Instruments</label>
@@ -685,39 +637,29 @@
                     <div class="dropdown-action-btn" onclick="selectAll()">✅ Select All</div>
                     <div class="dropdown-action-btn" onclick="deselectAll()">❌ Clear All</div>
                 </div>
-                <!-- Items populated by JS -->
             </div>
         </div>
         <div class="selected-chips" id="selectedChips"></div>
     </div>
-
     <div class="control-group">
         <label>Candles</label>
         <input type="number" id="candleCount" value="30" min="5" max="100">
     </div>
-
     <div class="control-group">
         <label>&nbsp;</label>
-        <button class="btn btn-summary" id="btnSummary" onclick="loadSummary()">
-            📋 Summary
-        </button>
+        <button class="btn btn-summary" id="btnSummary" onclick="loadSummary()">📋 Summary</button>
     </div>
-
     <div class="control-group">
         <label>&nbsp;</label>
-        <button class="btn btn-primary" id="btnAnalysis" onclick="loadFullAnalysis()">
-            🔍 Full Analysis
-        </button>
+        <button class="btn btn-primary" id="btnAnalysis" onclick="loadFullAnalysis()">🔍 Full Analysis</button>
     </div>
 </div>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loading">
     <div class="spinner"></div>
     <div class="loading-text" id="loadingText">Fetching candle data...</div>
 </div>
 
-<!-- SUMMARY TABLE -->
 <div class="summary-section" id="summarySection" style="display:none;">
     <h2>📋 Latest Candle - Summary View</h2>
     <div class="table-wrapper">
@@ -746,38 +688,31 @@
     </div>
 </div>
 
-<!-- DETAIL SECTION -->
 <div class="detail-section" id="detailSection"></div>
 
 <script>
-// ─── INSTRUMENT LIST ────────────────────────────────────
 const INSTRUMENTS = [
-    { code: 'XAU_USD',    name: 'Gold',      display: 'XAU/USD',    icon: '🥇' },
-    { code: 'US30_USD',   name: 'US30 (Dow)', display: 'US30',      icon: '📈' },
-    { code: 'NAS100_USD', name: 'Nasdaq 100', display: 'NAS100',    icon: '💻' },
-    { code: 'EUR_USD',    name: 'Euro/Dollar', display: 'EUR/USD',  icon: '💶' },
-    { code: 'GBP_USD',    name: 'Pound/Dollar', display: 'GBP/USD', icon: '💷' },
-    { code: 'GBP_JPY',    name: 'Pound/Yen',  display: 'GBP/JPY',  icon: '💷' },
-    { code: 'USD_JPY',    name: 'Dollar/Yen', display: 'USD/JPY',  icon: '💴' },
-    { code: 'AUD_USD',    name: 'Aussie/Dollar', display: 'AUD/USD', icon: '🦘' }
+    { code: 'XAU_USD',    name: 'Gold',         display: 'XAU/USD',  icon: '🥇' },
+    { code: 'US30_USD',   name: 'US30 (Dow)',    display: 'US30',     icon: '📈' },
+    { code: 'NAS100_USD', name: 'Nasdaq 100',    display: 'NAS100',   icon: '💻' },
+    { code: 'EUR_USD',    name: 'Euro/Dollar',   display: 'EUR/USD',  icon: '💶' },
+    { code: 'GBP_USD',    name: 'Pound/Dollar',  display: 'GBP/USD',  icon: '💷' },
+    { code: 'GBP_JPY',    name: 'Pound/Yen',     display: 'GBP/JPY',  icon: '💷' },
+    { code: 'USD_JPY',    name: 'Dollar/Yen',    display: 'USD/JPY',  icon: '💴' },
+    { code: 'AUD_USD',    name: 'Aussie/Dollar', display: 'AUD/USD',  icon: '🦘' }
 ];
 
 const TIMEFRAMES = ['Daily', 'Weekly', 'Monthly'];
 let selectedInstruments = new Set();
 
-// ─── DROPDOWN LOGIC ─────────────────────────────────────
+// ─── DROPDOWN ───────────────────────────────────────────
 function initDropdown() {
     const menu = document.getElementById('dropdownMenu');
-    const actionsDiv = menu.querySelector('.dropdown-actions');
-
     INSTRUMENTS.forEach(inst => {
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.dataset.code = inst.code;
-        item.onclick = (e) => {
-            e.stopPropagation();
-            toggleItem(inst.code);
-        };
+        item.onclick = (e) => { e.stopPropagation(); toggleItem(inst.code); };
         item.innerHTML = `
             <div class="item-checkbox"></div>
             <span class="item-icon">${inst.icon}</span>
@@ -786,33 +721,24 @@ function initDropdown() {
         `;
         menu.appendChild(item);
     });
-
-    // Select all by default
     selectAll();
 }
 
 function toggleDropdown() {
-    const trigger = document.getElementById('dropdownTrigger');
-    const menu = document.getElementById('dropdownMenu');
-    trigger.classList.toggle('open');
-    menu.classList.toggle('open');
+    document.getElementById('dropdownTrigger').classList.toggle('open');
+    document.getElementById('dropdownMenu').classList.toggle('open');
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
-    const wrapper = document.getElementById('dropdownWrapper');
-    if (!wrapper.contains(e.target)) {
+    if (!document.getElementById('dropdownWrapper').contains(e.target)) {
         document.getElementById('dropdownTrigger').classList.remove('open');
         document.getElementById('dropdownMenu').classList.remove('open');
     }
 });
 
 function toggleItem(code) {
-    if (selectedInstruments.has(code)) {
-        selectedInstruments.delete(code);
-    } else {
-        selectedInstruments.add(code);
-    }
+    if (selectedInstruments.has(code)) selectedInstruments.delete(code);
+    else selectedInstruments.add(code);
     updateDropdownUI();
 }
 
@@ -832,54 +758,32 @@ function removeChip(code) {
 }
 
 function updateDropdownUI() {
-    // Update trigger text
     const textEl = document.getElementById('selectedText');
-    if (selectedInstruments.size === 0) {
-        textEl.textContent = 'Select instruments...';
-    } else if (selectedInstruments.size === INSTRUMENTS.length) {
-        textEl.textContent = `All instruments (${INSTRUMENTS.length})`;
-    } else {
-        textEl.textContent = `${selectedInstruments.size} instrument${selectedInstruments.size > 1 ? 's' : ''} selected`;
-    }
+    if (selectedInstruments.size === 0) textEl.textContent = 'Select instruments...';
+    else if (selectedInstruments.size === INSTRUMENTS.length) textEl.textContent = `All instruments (${INSTRUMENTS.length})`;
+    else textEl.textContent = `${selectedInstruments.size} selected`;
 
-    // Update checkboxes in dropdown
     document.querySelectorAll('.dropdown-item').forEach(item => {
-        const code = item.dataset.code;
-        if (selectedInstruments.has(code)) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
+        item.classList.toggle('selected', selectedInstruments.has(item.dataset.code));
     });
 
-    // Update chips
     const chipsContainer = document.getElementById('selectedChips');
     chipsContainer.innerHTML = '';
-
-    // Get instruments in original order
     INSTRUMENTS.forEach(inst => {
         if (selectedInstruments.has(inst.code)) {
             const chip = document.createElement('span');
             chip.className = 'chip';
-            chip.innerHTML = `
-                ${inst.icon} ${inst.display}
-                <span class="chip-remove" onclick="removeChip('${inst.code}')">×</span>
-            `;
+            chip.innerHTML = `${inst.icon} ${inst.display} <span class="chip-remove" onclick="removeChip('${inst.code}')">×</span>`;
             chipsContainer.appendChild(chip);
         }
     });
 
-    // Enable/disable buttons
-    const hasSelection = selectedInstruments.size > 0;
-    document.getElementById('btnSummary').disabled = !hasSelection;
-    document.getElementById('btnAnalysis').disabled = !hasSelection;
+    document.getElementById('btnSummary').disabled = selectedInstruments.size === 0;
+    document.getElementById('btnAnalysis').disabled = selectedInstruments.size === 0;
 }
 
 function getSelectedInstruments() {
-    // Return in original order
-    return INSTRUMENTS
-        .filter(inst => selectedInstruments.has(inst.code))
-        .map(inst => inst.code);
+    return INSTRUMENTS.filter(i => selectedInstruments.has(i.code)).map(i => i.code);
 }
 
 function getInstrumentDisplay(code) {
@@ -887,19 +791,28 @@ function getInstrumentDisplay(code) {
     return inst ? `${inst.icon} ${inst.display}` : code;
 }
 
-// ─── LOADING ────────────────────────────────────────────
+// ─── HELPERS ────────────────────────────────────────────
 function showLoading(show, text = 'Fetching candle data...') {
     document.getElementById('loading').classList.toggle('active', show);
     document.getElementById('loadingText').textContent = text;
 }
 
-// ─── BADGE HELPERS ──────────────────────────────────────
 function getBadgeClass(cls, dir) {
+    if (cls === 'Marubozu') return 'badge-marubozu';
     if (cls === 'ERC' && dir === 'Bullish') return 'badge-erc-bull';
     if (cls === 'ERC' && dir === 'Bearish') return 'badge-erc-bear';
+    if (cls === 'Failed ERC') return 'badge-failed-erc';
     if (cls === 'Base') return 'badge-base';
-    if (cls === 'Indecisive') return 'badge-indecisive';
     return 'badge-na';
+}
+
+function getRowClass(cls, dir) {
+    if (cls === 'Marubozu') return 'row-marubozu';
+    if (cls === 'ERC' && dir === 'Bullish') return 'row-erc-bull';
+    if (cls === 'ERC' && dir === 'Bearish') return 'row-erc-bear';
+    if (cls === 'Failed ERC') return 'row-failed-erc';
+    if (cls === 'Base') return 'row-base';
+    return '';
 }
 
 function getDirClass(dir) {
@@ -917,52 +830,40 @@ function getDirIcon(dir) {
 // ─── SUMMARY ────────────────────────────────────────────
 async function loadSummary() {
     const instruments = getSelectedInstruments();
-    if (!instruments.length) { alert('Please select at least one instrument'); return; }
-
-    showLoading(true, 'Loading summary data...');
-
+    if (!instruments.length) return;
+    showLoading(true, 'Loading summary...');
     try {
         const resp = await fetch('/api/summary', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ instruments })
         });
-
         if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-        const data = await resp.json();
-        renderSummary(data);
-    } catch (e) {
-        alert('Error loading summary: ' + e.message);
-    }
-
+        renderSummary(await resp.json());
+    } catch (e) { alert('Error: ' + e.message); }
     showLoading(false);
 }
 
 function renderSummary(data) {
     const tbody = document.querySelector('#summaryTable tbody');
     tbody.innerHTML = '';
-
     data.forEach(row => {
         const tr = document.createElement('tr');
-        const display = getInstrumentDisplay(row.instrument);
-        let cells = `<td><strong>${display}</strong></td>`;
-
+        let cells = `<td><strong>${getInstrumentDisplay(row.instrument)}</strong></td>`;
         TIMEFRAMES.forEach(tf => {
             const d = row[tf];
-            const badgeCls = getBadgeClass(d.classification, d.direction);
+            const badge = getBadgeClass(d.classification, d.direction);
             const dirCls = getDirClass(d.direction);
             const icon = getDirIcon(d.direction);
+            const label = d.is_marubozu ? 'MARUBOZU' : d.classification;
             cells += `
-                <td class="tf-cell"><span class="badge ${badgeCls}">${d.classification}</span></td>
+                <td class="tf-cell"><span class="badge ${badge}">${label}</span></td>
                 <td class="tf-cell">${d.body_pct}%</td>
-                <td class="tf-cell ${dirCls}">${icon} ${d.direction}</td>
-            `;
+                <td class="tf-cell ${dirCls}">${icon} ${d.direction}</td>`;
         });
-
         tr.innerHTML = cells;
         tbody.appendChild(tr);
     });
-
     document.getElementById('summarySection').style.display = 'block';
     document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
 }
@@ -970,136 +871,124 @@ function renderSummary(data) {
 // ─── FULL ANALYSIS ──────────────────────────────────────
 async function loadFullAnalysis() {
     const instruments = getSelectedInstruments();
-    if (!instruments.length) { alert('Please select at least one instrument'); return; }
-
+    if (!instruments.length) return;
     const count = parseInt(document.getElementById('candleCount').value) || 30;
-    showLoading(true, `Analyzing ${instruments.length} instruments across all timeframes...`);
-
+    showLoading(true, `Analyzing ${instruments.length} instruments...`);
     try {
         const resp = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ instruments, candle_count: count })
         });
-
         if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-        const data = await resp.json();
-        renderDetail(data);
-    } catch (e) {
-        alert('Error loading analysis: ' + e.message);
-    }
-
+        renderDetail(await resp.json());
+    } catch (e) { alert('Error: ' + e.message); }
     showLoading(false);
 }
 
 function renderDetail(data) {
     const container = document.getElementById('detailSection');
     container.innerHTML = '<h2>🔍 Full Candle Analysis</h2>';
-
-    // Maintain original order
     const orderedKeys = getSelectedInstruments().filter(k => data[k]);
 
     orderedKeys.forEach((instrument, idx) => {
         const block = document.createElement('div');
         block.className = 'instrument-block';
-        const displayName = getInstrumentDisplay(instrument);
 
         const tabsHtml = TIMEFRAMES.map((tf, ti) =>
-            `<div class="tf-tab ${ti === 0 ? 'active' : ''}"
-                  onclick="switchTab(this, '${tf}', 'group_${idx}')"
-                  data-tf="${tf}">
-                ${tf}
-            </div>`
+            `<div class="tf-tab ${ti===0?'active':''}" onclick="switchTab(this,'${tf}','g${idx}')" data-tf="${tf}">${tf}</div>`
         ).join('');
 
         const contentsHtml = TIMEFRAMES.map((tf, ti) => {
             const candles = data[instrument][tf] || [];
-            const chartId = `chart_${idx}_${ti}`;
-
-            const counts = { ERC: 0, Base: 0, Indecisive: 0 };
-            candles.forEach(c => counts[c.classification]++);
+            const chartId = `c${idx}_${ti}`;
+            const counts = { ERC: 0, 'Failed ERC': 0, Base: 0, Marubozu: 0 };
+            candles.forEach(c => { if (counts[c.classification] !== undefined) counts[c.classification]++; });
             const total = candles.length || 1;
-            const ercPct = ((counts.ERC / total) * 100).toFixed(1);
-            const basePct = ((counts.Base / total) * 100).toFixed(1);
-            const indPct = ((counts.Indecisive / total) * 100).toFixed(1);
 
-            const tableRows = candles.slice().reverse().map(c => {
-                const badgeCls = getBadgeClass(c.classification, c.direction);
+            const ercPct = ((counts.ERC/total)*100).toFixed(1);
+            const failedPct = (((counts['Failed ERC'])/total)*100).toFixed(1);
+            const basePct = ((counts.Base/total)*100).toFixed(1);
+            const marPct = ((counts.Marubozu/total)*100).toFixed(1);
+
+            const rows = candles.slice().reverse().map(c => {
+                const badge = getBadgeClass(c.classification, c.direction);
                 const dirCls = getDirClass(c.direction);
-                const icon = getDirIcon(c.direction);
-                return `<tr>
+                const dirIcon = getDirIcon(c.direction);
+                const rowCls = getRowClass(c.classification, c.direction);
+                const label = c.is_marubozu ? 'MARUBOZU' : c.classification;
+                const baseMarker = c.classification === 'Base' ? '🟢' : '';
+                const maruMarker = c.is_marubozu ? '🔴' : '';
+                return `<tr class="${rowCls}">
                     <td>${c.time}</td>
                     <td>${c.open}</td>
-                    <td style="color:var(--erc-bull)">${c.high}</td>
-                    <td style="color:var(--erc-bear)">${c.low}</td>
+                    <td style="color:#4caf50">${c.high}</td>
+                    <td style="color:#f44336">${c.low}</td>
                     <td><strong>${c.close}</strong></td>
                     <td>${c.body_pct}%</td>
-                    <td><span class="badge ${badgeCls}">${c.classification}</span></td>
-                    <td class="${dirCls}">${icon} ${c.direction}</td>
+                    <td>${c.close_position_pct}%</td>
+                    <td><span class="badge ${badge}">${label}</span> ${baseMarker}${maruMarker}</td>
+                    <td class="${dirCls}">${dirIcon} ${c.direction}</td>
                 </tr>`;
-            }).join('') || '<tr><td colspan="8" class="empty-state">No data</td></tr>';
+            }).join('') || '<tr><td colspan="9" class="empty-state">No data</td></tr>';
 
             return `
-            <div class="tf-content ${ti === 0 ? 'active' : ''}"
-                 data-tf="${tf}" data-group="group_${idx}">
-
+            <div class="tf-content ${ti===0?'active':''}" data-tf="${tf}" data-group="g${idx}">
                 <div class="stats-bar">
                     <div class="stat-card">
-                        <div class="stat-label">ERC Candles</div>
+                        <div class="stat-label">ERC</div>
                         <div class="stat-value" style="color:var(--erc-bull)">${counts.ERC}</div>
-                        <div class="stat-sub">${ercPct}% of total</div>
+                        <div class="stat-sub">${ercPct}%</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Base Candles</div>
+                        <div class="stat-label">Failed ERC</div>
+                        <div class="stat-value" style="color:var(--failed-erc)">${counts['Failed ERC']}</div>
+                        <div class="stat-sub">${failedPct}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Base 🟢</div>
                         <div class="stat-value" style="color:var(--base-color)">${counts.Base}</div>
-                        <div class="stat-sub">${basePct}% of total</div>
+                        <div class="stat-sub">${basePct}%</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Indecisive</div>
-                        <div class="stat-value" style="color:var(--indecisive-color)">${counts.Indecisive}</div>
-                        <div class="stat-sub">${indPct}% of total</div>
+                        <div class="stat-label">Marubozu 🔴</div>
+                        <div class="stat-value" style="color:var(--marubozu)">${counts.Marubozu}</div>
+                        <div class="stat-sub">${marPct}%</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Total</div>
                         <div class="stat-value">${candles.length}</div>
-                        <div class="stat-sub">candles loaded</div>
+                        <div class="stat-sub">candles</div>
                     </div>
                 </div>
-
                 <div class="pct-bar">
                     <div class="pct-bar-segment" style="width:${ercPct}%;background:var(--erc-bull)"></div>
+                    <div class="pct-bar-segment" style="width:${failedPct}%;background:var(--failed-erc)"></div>
                     <div class="pct-bar-segment" style="width:${basePct}%;background:var(--base-color)"></div>
-                    <div class="pct-bar-segment" style="width:${indPct}%;background:var(--indecisive-color)"></div>
+                    <div class="pct-bar-segment" style="width:${marPct}%;background:var(--marubozu)"></div>
                 </div>
-
                 <div class="chart-container" id="${chartId}"></div>
-
                 <div class="table-scroll">
                     <table class="detail-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th><th>Open</th><th>High</th><th>Low</th>
-                                <th>Close</th><th>Body %</th><th>Classification</th><th>Direction</th>
-                            </tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
+                        <thead><tr>
+                            <th>Date</th><th>Open</th><th>High</th><th>Low</th><th>Close</th>
+                            <th>Body%</th><th>Close Pos%</th><th>Classification</th><th>Direction</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
                     </table>
                 </div>
             </div>`;
         }).join('');
 
         block.innerHTML = `
-            <div class="instrument-header">${displayName}</div>
-            <div class="timeframe-tabs" data-group="group_${idx}">${tabsHtml}</div>
-            ${contentsHtml}
-        `;
-
+            <div class="instrument-header">${getInstrumentDisplay(instrument)}</div>
+            <div class="timeframe-tabs" data-group="g${idx}">${tabsHtml}</div>
+            ${contentsHtml}`;
         container.appendChild(block);
 
         setTimeout(() => {
             TIMEFRAMES.forEach((tf, ti) => {
-                const candles = data[instrument][tf] || [];
-                renderChart(`chart_${idx}_${ti}`, candles);
+                renderChart(`c${idx}_${ti}`, data[instrument][tf] || []);
             });
         }, 150);
     });
@@ -1109,35 +998,27 @@ function renderDetail(data) {
 
 function switchTab(el, tf, group) {
     const block = el.closest('.instrument-block');
-    block.querySelectorAll(`.timeframe-tabs[data-group="${group}"] .tf-tab`)
-        .forEach(t => t.classList.remove('active'));
+    block.querySelectorAll(`.timeframe-tabs[data-group="${group}"] .tf-tab`).forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-
     block.querySelectorAll(`.tf-content[data-group="${group}"]`).forEach(c => {
         c.classList.toggle('active', c.dataset.tf === tf);
     });
 }
 
+// ─── CHART ──────────────────────────────────────────────
 function renderChart(containerId, candles) {
     const container = document.getElementById(containerId);
-    if (!container || candles.length === 0) {
-        if (container) container.innerHTML = '<div class="empty-state">No chart data available</div>';
+    if (!container || !candles.length) {
+        if (container) container.innerHTML = '<div class="empty-state">No data</div>';
         return;
     }
-
     container.innerHTML = '';
 
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: 360,
-        layout: {
-            background: { color: '#0a0e17' },
-            textColor: '#787b86',
-        },
-        grid: {
-            vertLines: { color: '#1c2030' },
-            horzLines: { color: '#1c2030' },
-        },
+        layout: { background: { color: '#0a0e17' }, textColor: '#787b86' },
+        grid: { vertLines: { color: '#1c2030' }, horzLines: { color: '#1c2030' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
         rightPriceScale: { borderColor: '#2a2e39' },
         timeScale: { borderColor: '#2a2e39', timeVisible: true },
@@ -1145,6 +1026,7 @@ function renderChart(containerId, candles) {
 
     container._chart = chart;
 
+    // Default candle colors
     const candleSeries = chart.addCandlestickSeries({
         upColor: '#26a69a',
         downColor: '#ef5350',
@@ -1154,30 +1036,74 @@ function renderChart(containerId, candles) {
         wickDownColor: '#ef5350',
     });
 
-    const chartData = candles.map(c => ({
-        time: c.time, open: c.open, high: c.high, low: c.low, close: c.close
-    }));
+    // Color each candle based on classification
+    const chartData = candles.map(c => {
+        let color;
+        if (c.is_marubozu || c.classification === 'Marubozu') {
+            // Marubozu: keep normal colors but will mark with circle
+            color = c.direction === 'Bullish' ? '#e91e63' : '#e91e63';
+        } else if (c.classification === 'ERC') {
+            // ERC Bullish = Blue, ERC Bearish = Red
+            color = c.direction === 'Bullish' ? '#2196F3' : '#f44336';
+        } else if (c.classification === 'Failed ERC') {
+            // Failed ERC = Orange
+            color = '#ff9800';
+        } else {
+            // Base = subdued/gray
+            color = '#555555';
+        }
+
+        return {
+            time: c.time,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+            color: color,
+            borderColor: color,
+            wickColor: color
+        };
+    });
 
     candleSeries.setData(chartData);
 
+    // Markers
     const markers = candles.map(c => {
         let color, shape, position, text;
-        if (c.classification === 'ERC') {
-            color = c.direction === 'Bullish' ? '#00c853' : '#ff1744';
-            shape = c.direction === 'Bullish' ? 'arrowUp' : 'arrowDown';
-            position = c.direction === 'Bullish' ? 'belowBar' : 'aboveBar';
-            text = 'ERC';
-        } else if (c.classification === 'Indecisive') {
-            color = '#42a5f5';
+
+        if (c.is_marubozu || c.classification === 'Marubozu') {
+            // Red circle for Marubozu
+            color = '#e91e63';
             shape = 'circle';
-            position = 'aboveBar';
-            text = '?';
-        } else {
-            color = '#ffa726';
+            position = c.direction === 'Bullish' ? 'belowBar' : 'aboveBar';
+            text = '⭕ MRB';
+        } else if (c.classification === 'ERC') {
+            // Blue arrow up for bullish ERC, Red arrow down for bearish ERC
+            if (c.direction === 'Bullish') {
+                color = '#2196F3';
+                shape = 'arrowUp';
+                position = 'belowBar';
+                text = 'ERC';
+            } else {
+                color = '#f44336';
+                shape = 'arrowDown';
+                position = 'aboveBar';
+                text = 'ERC';
+            }
+        } else if (c.classification === 'Failed ERC') {
+            // Orange square for Failed ERC
+            color = '#ff9800';
             shape = 'square';
             position = 'aboveBar';
-            text = 'B';
+            text = 'FERC';
+        } else {
+            // Green dot for Base candles
+            color = '#4caf50';
+            shape = 'circle';
+            position = 'aboveBar';
+            text = '●';
         }
+
         return { time: c.time, position, color, shape, text, size: 0.6 };
     });
 
@@ -1192,6 +1118,5 @@ function renderChart(containerId, candles) {
 // ─── INIT ───────────────────────────────────────────────
 initDropdown();
 </script>
-
 </body>
 </html>
