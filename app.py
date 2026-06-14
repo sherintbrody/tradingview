@@ -9,9 +9,12 @@ DEFAULT_INSTRUMENTS = [
     "XAU_USD",
     "US30_USD",
     "NAS100_USD",
+    "SPX500_USD",
     "EUR_USD",
     "GBP_USD",
     "GBP_JPY",
+    "EUR_JPY",
+    "AUD_JPY",
     "USD_JPY",
     "AUD_USD"
 ]
