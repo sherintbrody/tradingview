@@ -16,6 +16,7 @@ DEFAULT_INSTRUMENTS = [
     "EUR_JPY",
     "AUD_JPY",
     "USD_JPY",
+    "NZD_USD",
     "AUD_USD"
 ]
 
